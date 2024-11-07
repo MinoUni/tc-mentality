@@ -1,0 +1,20 @@
+server.port: 8080
+spring:
+  application:
+    name: mentality
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+#      pool-name: hikari
+#      auto-commit: false
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DOMAIN}:${PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  liguibase:
+    enabled: false
+    change-log: classpath:db/changelog/db.changelog-master.yaml

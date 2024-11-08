@@ -23,6 +23,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<checkstyle-maven-plugin.version>3.3.1</checkstyle-maven-plugin.version>
 		<ds-proxy-spring-boot-starter.version>1.9.0</ds-proxy-spring-boot-starter.version>
+		<moneta.version>1.4.4</moneta.version>
+		<hypersistence-utils.version>3.8.3</hypersistence-utils.version>
 	</properties>
 
 	<dependencies>
@@ -46,6 +48,17 @@
 			<groupId>com.github.gavlyukovskiy</groupId>
 			<artifactId>datasource-proxy-spring-boot-starter</artifactId>
 			<version>${ds-proxy-spring-boot-starter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.javamoney</groupId>
+			<artifactId>moneta</artifactId>
+			<version>${moneta.version}</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>io.hypersistence</groupId>
+			<artifactId>hypersistence-utils-hibernate-63</artifactId>
+			<version>${hypersistence-utils.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>

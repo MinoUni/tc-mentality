@@ -22,6 +22,7 @@
 		<maven.compiler.target>21</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<checkstyle-maven-plugin.version>3.3.1</checkstyle-maven-plugin.version>
+		<ds-proxy-spring-boot-starter.version>1.9.0</ds-proxy-spring-boot-starter.version>
 	</properties>
 
 	<dependencies>
@@ -41,7 +42,11 @@
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>com.github.gavlyukovskiy</groupId>
+			<artifactId>datasource-proxy-spring-boot-starter</artifactId>
+			<version>${ds-proxy-spring-boot-starter.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>

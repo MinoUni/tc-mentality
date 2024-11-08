@@ -1,20 +1,30 @@
 server.port: 8080
+logging.level:
+  net.ttddyy.dsproxy.listener: info
 spring:
   application:
     name: mentality
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
-#      pool-name: hikari
-#      auto-commit: false
+      auto-commit: false
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${DOMAIN}:${PORT}/${DB_NAME}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        query:
+          in_clause_parameter_padding: true
+          fail_on_pagination_over_collection_fetch: true
+          plan_cache_max_size: 2048
+        connection:
+          provider_disables_autocommit: true
   liguibase:
     enabled: false
     change-log: classpath:db/changelog/db.changelog-master.yaml

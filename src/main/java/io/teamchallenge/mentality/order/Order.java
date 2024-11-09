@@ -1,26 +1,26 @@
-package io.teamchallenge.mentality.product;
+package io.teamchallenge.mentality.order;
 
 import io.hypersistence.utils.hibernate.type.money.MonetaryAmountType;
-import io.teamchallenge.mentality.customer.CustomerCart;
-import io.teamchallenge.mentality.customer.CustomerWishlist;
-import io.teamchallenge.mentality.order.OrderItem;
+import io.teamchallenge.mentality.customer.Customer;
+import io.teamchallenge.mentality.product.Product;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.money.MonetaryAmount;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,24 +29,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CompositeType;
 
-@Getter
 @Setter
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "products")
-public class Product {
+@Table(name = "orders")
+public class Order {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @Column(nullable = false)
-  private String name;
-
-  @Column(columnDefinition = "TEXT")
-  private String description;
+  @Enumerated(EnumType.STRING)
+  private OrderStatus status;
 
   @Transient
   @CompositeType(MonetaryAmountType.class)
@@ -54,34 +51,34 @@ public class Product {
   @AttributeOverride(name = "currency", column = @Column(name = "price_currency"))
   private MonetaryAmount price;
 
-  @Enumerated(EnumType.STRING)
-  private ProductStatus status;
+  @Builder.Default
+  private LocalDateTime timestamp = LocalDateTime.now();
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  private Customer customer;
 
   @Builder.Default
-  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> items = new ArrayList<>();
 
-  @Builder.Default
-  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-  private Set<Category> categories = new HashSet<>();
-
-  @Builder.Default
-  @ManyToMany(mappedBy = "products")
-  private Set<CustomerWishlist> customerWishlists = new HashSet<>();
-
-  @Builder.Default
-  @ManyToMany(mappedBy = "products")
-  private Set<CustomerCart> customerCarts = new HashSet<>();
-
-  public Product addCategory(Category category) {
-    categories.add(category);
-    category.setProduct(this);
+  public Order addProduct(Product product) {
+    OrderItem item = new OrderItem(product, this);
+    items.add(item);
+    product.getItems().add(item);
     return this;
   }
 
-  public Product removeCategory(Category category) {
-    categories.remove(category);
-    category.setProduct(null);
+  public Order removeProduct(Product product) {
+    for (Iterator<OrderItem> iterator = items.iterator(); iterator.hasNext(); ) {
+      OrderItem item = iterator.next();
+      if (item.getOrder().equals(this) && item.getProduct().equals(product)) {
+        iterator.remove();
+        item.getProduct().getItems().remove(item);
+        item.setOrder(null);
+        item.setProduct(null);
+        break;
+      }
+    }
     return this;
   }
 }

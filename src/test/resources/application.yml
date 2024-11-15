@@ -3,17 +3,22 @@ spring:
     enabled: false
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
+    open-in-view: false
     properties:
       hibernate:
+        query:
+          in_clause_parameter_padding: true
+          fail_on_pagination_over_collection_fetch: true
+          plan_cache_max_size: 2048
         connection:
           provider_disables_autocommit: true
         format-sql: true
     show-sql: false
-    datasource:
-      driver-class-name: org.h2.Driver
-      url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
-      username: sa
-      password: sa
-      hikari:
-        auto-commit: false
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DOMAIN:postgres}:${PORT:5432}/${DB_NAME_TEST:mentality_test}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:pass}
+    hikari:
+      auto-commit: false

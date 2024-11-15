@@ -8,9 +8,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  verify:
+  default:
     runs-on: [ ubuntu-latest ]
-    name: Verify
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: pass
+          POSTGRES_USER: admin
+          POSTGRES_DB: mentality_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 21
@@ -18,5 +29,5 @@ jobs:
         with:
           java-version: 21
           distribution: 'corretto'
-      - name: Maven verify
+      - name: Verify with Maven
         run: mvn -B clean verify

@@ -2,7 +2,6 @@ package io.teamchallenge.mentality.product;
 
 import io.hypersistence.utils.hibernate.type.money.MonetaryAmountType;
 import io.teamchallenge.mentality.customer.CustomerCart;
-import io.teamchallenge.mentality.customer.CustomerWishlist;
 import io.teamchallenge.mentality.order.OrderItem;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
@@ -10,10 +9,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -42,6 +42,12 @@ public class Product {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
+  /*
+    @NaturalId
+    @Column(nullable = false, unique = true)
+    private String sku; // stockKeepingUnit
+  */
+
   @Column(nullable = false)
   private String name;
 
@@ -50,12 +56,26 @@ public class Product {
 
   @Transient
   @CompositeType(MonetaryAmountType.class)
-  @AttributeOverride(name = "amount", column = @Column(name = "price_amount"))
-  @AttributeOverride(name = "currency", column = @Column(name = "price_currency"))
+  @AttributeOverride(name = "amount", column = @Column(name = "price_amount", nullable = false))
   private MonetaryAmount price;
+
+  @Transient
+  @CompositeType(MonetaryAmountType.class)
+  @AttributeOverride(name = "amount", column = @Column(name = "sale_price_amount"))
+  private MonetaryAmount salePrice;
 
   @Enumerated(EnumType.STRING)
   private ProductStatus status;
+
+  @Column(nullable = false)
+  private Integer quantityInStock;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  private Category category;
+
+  @Builder.Default
+  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Set<ProductImage> images = new HashSet<>();
 
   @Builder.Default
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -63,25 +83,5 @@ public class Product {
 
   @Builder.Default
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-  private Set<Category> categories = new HashSet<>();
-
-  @Builder.Default
-  @ManyToMany(mappedBy = "products")
-  private Set<CustomerWishlist> customerWishlists = new HashSet<>();
-
-  @Builder.Default
-  @ManyToMany(mappedBy = "products")
-  private Set<CustomerCart> customerCarts = new HashSet<>();
-
-  public Product addCategory(Category category) {
-    categories.add(category);
-    category.setProduct(this);
-    return this;
-  }
-
-  public Product removeCategory(Category category) {
-    categories.remove(category);
-    category.setProduct(null);
-    return this;
-  }
+  private List<CustomerCart> customerCarts = new ArrayList<>();
 }

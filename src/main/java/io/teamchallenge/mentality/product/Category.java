@@ -1,14 +1,16 @@
 package io.teamchallenge.mentality.product;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,17 +27,31 @@ import lombok.Setter;
 public class Category {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Integer id;
-
-  @Column(nullable = false, unique = true)
   private String name;
 
   @Column(columnDefinition = "TEXT")
   private String description;
 
+  private String imageFilename;
+
   @ManyToOne(fetch = FetchType.LAZY)
-  private Product product;
+  private Category parentCategory;
+
+  @Builder.Default
+  @OneToMany(mappedBy = "parentCategory")
+  private Set<Category> subCategories = new HashSet<>();
+
+  @Builder.Default
+  @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Set<Product> products = new HashSet<>();
+
+  public Category addSubCategory(String categoryName) {
+    Category subCategory = new Category();
+    subCategory.setName(categoryName);
+    this.subCategories.add(subCategory);
+    subCategory.setParentCategory(this);
+    return this;
+  }
 
   @Override
   public boolean equals(Object o) {
@@ -45,11 +61,11 @@ public class Category {
     if (!(o instanceof Category category)) {
       return false;
     }
-    return Objects.equals(id, category.id) && Objects.equals(name, category.name);
+    return Objects.equals(name, category.name);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name);
+    return Objects.hash(name);
   }
 }

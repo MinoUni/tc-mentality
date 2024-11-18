@@ -27,6 +27,10 @@ public class Notification {
   @Id
   private Integer id;
 
+  @MapsId
+  @OneToOne(fetch = FetchType.LAZY)
+  private Order order;
+
   @Column(nullable = false)
   private String sender;
 
@@ -40,8 +44,4 @@ public class Notification {
 
   @Builder.Default
   private LocalDateTime sendAt = LocalDateTime.now();
-
-  @MapsId
-  @OneToOne(fetch = FetchType.LAZY)
-  private Order order;
 }

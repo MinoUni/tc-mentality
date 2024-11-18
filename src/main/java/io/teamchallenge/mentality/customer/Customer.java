@@ -12,11 +12,13 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.NaturalId;
 
 @Getter
 @Setter
@@ -31,12 +33,13 @@ public class Customer {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
+  @NaturalId
+  @Column(nullable = false, unique = true)
+  private String email;
+
   private String firstName;
 
   private String lastName;
-
-  @Column(nullable = false, unique = true)
-  private String email;
 
   private String phone;
 
@@ -49,15 +52,20 @@ public class Customer {
   @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Order> orders = new ArrayList<>();
 
-  private Customer addOrder(Order order) {
-    orders.add(order);
-    order.setCustomer(this);
-    return this;
+  @Builder.Default
+  @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<CustomerCart> shoppingCarts = new ArrayList<>();
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof Customer customer)) {
+      return false;
+    }
+    return Objects.equals(email, customer.email);
   }
 
-  private Customer removeOrder(Order order) {
-    orders.remove(order);
-    order.setCustomer(null);
-    return this;
+  @Override
+  public int hashCode() {
+    return Objects.hash(email);
   }
 }

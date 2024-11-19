@@ -4,21 +4,27 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
+@Builder
+@NoArgsConstructor
 @Embeddable
 public class OrderItemId implements Serializable {
 
-  @Column(name = "product_id")
-  private Integer productId;
+  @Column
+  private String productSku;
 
-  @Column(name = "order_id")
-  private Integer orderId;
+  @Column
+  private String orderCode;
 
-  public OrderItemId(Integer productId, Integer orderId) {
-    this.productId = productId;
-    this.orderId = orderId;
+  public OrderItemId(String productSku, String orderCode) {
+    this.productSku = productSku;
+    this.orderCode = orderCode;
   }
 
   @Override
@@ -29,11 +35,11 @@ public class OrderItemId implements Serializable {
     if (!(o instanceof OrderItemId that)) {
       return false;
     }
-    return Objects.equals(productId, that.productId) && Objects.equals(orderId, that.orderId);
+    return Objects.equals(productSku, that.productSku) && Objects.equals(orderCode, that.orderCode);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(productId, orderId);
+    return Objects.hash(productSku, orderCode);
   }
 }

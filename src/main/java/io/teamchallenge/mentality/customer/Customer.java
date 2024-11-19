@@ -37,10 +37,13 @@ public class Customer {
   @Column(nullable = false, unique = true)
   private String email;
 
+  @Column(length = 50)
   private String firstName;
 
+  @Column(length = 50)
   private String lastName;
 
+  @Column(length = 17)
   private String phone;
 
   private String address;

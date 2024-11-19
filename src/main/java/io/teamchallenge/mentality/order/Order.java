@@ -2,7 +2,6 @@ package io.teamchallenge.mentality.order;
 
 import io.hypersistence.utils.hibernate.type.money.MonetaryAmountType;
 import io.teamchallenge.mentality.customer.Customer;
-import io.teamchallenge.mentality.notification.Notification;
 import io.teamchallenge.mentality.payment.PaymentDetails;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
@@ -14,9 +13,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import java.time.LocalDateTime;
@@ -29,6 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CompositeType;
+import org.hibernate.annotations.NaturalId;
 
 @Setter
 @Getter
@@ -43,11 +43,9 @@ public class Order {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  /*
-    @NaturalId
-    @Column(nullable = false, unique = true)
-    private String orderCode;
-  */
+  @NaturalId
+  @Column(nullable = false, unique = true)
+  private String orderCode;
 
   @Enumerated(EnumType.STRING)
   private OrderStatus status;
@@ -61,13 +59,11 @@ public class Order {
   private LocalDateTime orderDate = LocalDateTime.now();
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "customer_email", referencedColumnName = "email")
   private Customer customer;
 
   @ManyToOne(fetch = FetchType.LAZY)
   private PaymentDetails payment;
-
-  @OneToOne(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional = false)
-  private Notification notification;
 
   @Builder.Default
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)

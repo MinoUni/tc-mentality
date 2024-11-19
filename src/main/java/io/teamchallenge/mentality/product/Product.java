@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -28,6 +29,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CompositeType;
+import org.hibernate.annotations.NaturalId;
 
 @Getter
 @Setter
@@ -42,11 +44,9 @@ public class Product {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  /*
-    @NaturalId
-    @Column(nullable = false, unique = true)
-    private String sku; // stockKeepingUnit
-  */
+  @NaturalId
+  @Column(nullable = false, unique = true)
+  private String sku; // stockKeepingUnit
 
   @Column(nullable = false)
   private String name;
@@ -65,12 +65,14 @@ public class Product {
   private MonetaryAmount salePrice;
 
   @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
   private ProductStatus status;
 
   @Column(nullable = false)
   private Integer quantityInStock;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "category", referencedColumnName = "name")
   private Category category;
 
   @Builder.Default

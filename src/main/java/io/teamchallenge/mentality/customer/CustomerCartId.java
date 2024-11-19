@@ -5,20 +5,22 @@ import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 @Embeddable
 public class CustomerCartId implements Serializable {
 
   @Column
-  private Integer customerId;
+  private String customerEmail;
 
   @Column
-  private Integer productId;
+  private String productSku;
 
-  public CustomerCartId(Integer customerId, Integer productId) {
-    this.customerId = customerId;
-    this.productId = productId;
+  public CustomerCartId(String customerEmail, String productSku) {
+    this.customerEmail = customerEmail;
+    this.productSku = productSku;
   }
 
   @Override
@@ -26,11 +28,12 @@ public class CustomerCartId implements Serializable {
     if (!(o instanceof CustomerCartId that)) {
       return false;
     }
-    return Objects.equals(customerId, that.customerId) && Objects.equals(productId, that.productId);
+    return Objects.equals(customerEmail, that.customerEmail)
+        && Objects.equals(productSku, that.productSku);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(customerId, productId);
+    return Objects.hash(customerEmail, productSku);
   }
 }

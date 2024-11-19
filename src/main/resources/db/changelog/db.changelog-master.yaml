@@ -1,1 +1,3 @@
 databaseChangeLog:
+  - includeAll:
+      path: db/changelog/changeset/2024/11

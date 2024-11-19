@@ -14,7 +14,7 @@ spring:
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
     show-sql: false
     properties:
@@ -26,5 +26,5 @@ spring:
         connection:
           provider_disables_autocommit: true
   liguibase:
-    enabled: false
+    enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml

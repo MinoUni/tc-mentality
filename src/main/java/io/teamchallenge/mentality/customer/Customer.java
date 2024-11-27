@@ -48,6 +48,8 @@ public class Customer {
 
   private String address;
 
+  private String profilePicture;
+
   @Builder.Default
   private LocalDateTime createdAt = LocalDateTime.now();
 

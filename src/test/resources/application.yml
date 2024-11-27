@@ -22,3 +22,10 @@ spring:
     password: ${DB_PASSWORD:pass}
     hikari:
       auto-commit: false
+application:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+  github:
+    client-id: ${GITHUB_CLIENT_ID}
+    client-secret: ${GITHUB_CLIENT_SECRET}

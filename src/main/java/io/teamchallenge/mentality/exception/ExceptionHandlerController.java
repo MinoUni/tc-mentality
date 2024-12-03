@@ -13,14 +13,14 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
 
   @ExceptionHandler({GithubTokenException.class, IdTokenParseException.class})
-  public ResponseEntity<Object> handleGithubTokenException(
-      final GithubTokenException e, final WebRequest req) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+  public ResponseEntity<Object> handleTokenException(
+      final RuntimeException e, final WebRequest req) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
         .body(
             new ApiErrorResponse(
                 LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.name(),
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.UNAUTHORIZED.name(),
+                HttpStatus.UNAUTHORIZED.value(),
                 e.getMessage(),
                 req.getDescription(false).replace("uri=", "")));
   }

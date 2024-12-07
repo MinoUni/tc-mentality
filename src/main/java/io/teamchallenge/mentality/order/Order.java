@@ -2,6 +2,7 @@ package io.teamchallenge.mentality.order;
 
 import io.hypersistence.utils.hibernate.type.money.MonetaryAmountType;
 import io.teamchallenge.mentality.customer.Customer;
+import io.teamchallenge.mentality.notification.Notification;
 import io.teamchallenge.mentality.payment.PaymentDetails;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
@@ -68,4 +69,8 @@ public class Order {
   @Builder.Default
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> items = new ArrayList<>();
+
+  @Builder.Default
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Notification> notifications = new ArrayList<>();
 }

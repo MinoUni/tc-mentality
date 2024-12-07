@@ -46,6 +46,6 @@ public class Notification {
   private LocalDateTime sendAt = LocalDateTime.now();
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "order_code", referencedColumnName = "order_code")
+  @JoinColumn(name = "order_code", referencedColumnName = "orderCode")
   private Order order;
 }

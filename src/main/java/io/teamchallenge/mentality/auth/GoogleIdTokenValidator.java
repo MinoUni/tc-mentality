@@ -5,7 +5,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-import io.teamchallenge.mentality.exception.IdTokenParseException;
+import io.teamchallenge.mentality.exception.GoogleTokenException;
 import java.io.IOException;
 import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class GoogleIdTokenValidator {
       return GoogleIdToken.parse(verifier.getJsonFactory(), idTokenString);
     } catch (IOException e) {
       log.info("Failed to parse Id token string. ", e);
-      throw new IdTokenParseException(e.getMessage());
+      throw new GoogleTokenException(e.getMessage());
     }
   }
 
@@ -42,7 +42,7 @@ public class GoogleIdTokenValidator {
       return verifier.verifyOrThrow(idToken);
     } catch (IOException e) {
       log.info("Id token verification fails to run. ", e);
-      return false;
+      throw new GoogleTokenException(e.getMessage());
     }
   }
 }

@@ -1,6 +1,6 @@
 server.port: 8080
 logging.level:
-  net.ttddyy.dsproxy.listener: info
+  net.ttddyy.dsproxy.listener: DEBUG
 spring:
   application:
     name: mentality
@@ -25,6 +25,13 @@ spring:
           plan_cache_max_size: 2048
         connection:
           provider_disables_autocommit: true
-  liguibase:
+  liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+application:
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+  github:
+    client-id: ${GITHUB_CLIENT_ID}
+    client-secret: ${GITHUB_CLIENT_SECRET}

@@ -10,10 +10,10 @@
 	</parent>
 
 	<groupId>io.teamchallenge</groupId>
-	<artifactId>mentality-backend</artifactId>
-	<version>0.0.1</version>
+	<artifactId>mentality</artifactId>
+	<version>1.0.0</version>
 
-	<name>mentality-backend</name>
+	<name>mentality</name>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>
@@ -28,19 +28,26 @@
 		<moneta.version>1.4.4</moneta.version>
 		<hypersistence-utils.version>3.8.3</hypersistence-utils.version>
 		<liquibase-core.version>4.29.0</liquibase-core.version>
+		<springdoc.version>2.2.0</springdoc.version>
+		<google-api-client.version>2.6.0</google-api-client.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.google.api-client</groupId>
 			<artifactId>google-api-client</artifactId>
-			<version>2.6.0</version>
+			<version>${google-api-client.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

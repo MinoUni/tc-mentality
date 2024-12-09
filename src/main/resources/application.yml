@@ -1,6 +1,6 @@
 server.port: 8080
 logging.level:
-  net.ttddyy.dsproxy.listener: info
+  net.ttddyy.dsproxy.listener: DEBUG
 spring:
   application:
     name: mentality
@@ -14,7 +14,7 @@ spring:
     password: ${DB_PASSWORD}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
     show-sql: false
     properties:
@@ -26,7 +26,7 @@ spring:
         connection:
           provider_disables_autocommit: true
   liquibase:
-    enabled: false
+    enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
 application:
   google:

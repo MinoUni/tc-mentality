@@ -2,7 +2,6 @@ package io.teamchallenge.mentality.auth;
 
 import io.teamchallenge.mentality.exception.GithubTokenException;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
@@ -12,16 +11,20 @@ import org.springframework.web.client.RestClient;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
-public class GithubTokenValidator {
+public class GithubTokenClient {
 
   private final RestClient restClient;
 
-  public Map<String, Object> exchange(String tokenString) {
+  public GithubTokenClient(RestClient.Builder builder) {
+    this.restClient = builder.baseUrl("https://api.github.com").build();
+  }
+
+  public Map<String, Object> exchange(String authorization) {
+    final String tokenString = authorization.substring(7);
     return restClient
         .get()
-        .uri("https://api.github.com/user")
-        .headers(httpHeaders -> httpHeaders.setBearerAuth(tokenString.substring(7)))
+        .uri("/user")
+        .headers(httpHeaders -> httpHeaders.setBearerAuth(tokenString))
         .accept(MediaType.APPLICATION_JSON)
         .retrieve()
         .onStatus(

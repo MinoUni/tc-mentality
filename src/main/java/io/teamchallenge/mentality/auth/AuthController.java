@@ -29,10 +29,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @Tag(
     name = "Authentication endpoints",
     description = "Endpoints for extracting customer public information from the token payload")
-public class AuthController {
+class AuthController {
 
   private final GoogleIdTokenValidator googleTokenValidator;
-  private final GithubTokenValidator githubTokenValidator;
+  private final GithubTokenClient githubTokenClient;
   private final AuthService authService;
 
   @Operation(
@@ -114,7 +114,7 @@ public class AuthController {
   @PostMapping("github")
   public ResponseEntity<String> createFromGithubToken(
       @RequestHeader(AUTHORIZATION) String tokenString) {
-    Map<String, Object> payload = githubTokenValidator.exchange(tokenString);
+    Map<String, Object> payload = githubTokenClient.exchange(tokenString);
     Integer customerId = authService.createFromGithubToken(payload);
     return ResponseEntity.created(
             ServletUriComponentsBuilder.fromCurrentRequest()

@@ -1,0 +1,26 @@
+logging.level:
+  net.ttddyy.dsproxy.listener: DEBUG
+spring:
+  application:
+    name: test
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari.auto-commit: false
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DOMAIN:localhost}:${PORT:5432}/${DB_NAME_TEST:mentality_test}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:pass}
+  jpa:
+    hibernate.ddl-auto: validate
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        query:
+          in_clause_parameter_padding: true
+          fail_on_pagination_over_collection_fetch: true
+          plan_cache_max_size: 2048
+        connection:
+          provider_disables_autocommit: true
+  liquibase.enabled: false
+  sql.init.mode: always

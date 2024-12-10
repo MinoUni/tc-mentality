@@ -1,6 +1,7 @@
 package io.teamchallenge.mentality.exception;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import io.teamchallenge.mentality.exception.dto.ApiErrorResponse;
@@ -26,5 +27,12 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
       final RuntimeException e, final WebRequest req) {
     return ResponseEntity.status(UNAUTHORIZED)
         .body(new ApiErrorResponse(UNAUTHORIZED, e.getMessage(), req.getDescription(false)));
+  }
+
+  @ExceptionHandler({CustomerNotFoundException.class})
+  public ResponseEntity<Object> handleEntityNotFoundException(
+      final RuntimeException e, final WebRequest req) {
+    return ResponseEntity.status(NOT_FOUND)
+        .body(new ApiErrorResponse(NOT_FOUND, e.getMessage(), req.getDescription(false)));
   }
 }

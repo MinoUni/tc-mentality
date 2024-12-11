@@ -12,6 +12,7 @@ import io.teamchallenge.mentality.exception.dto.ApiErrorResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,7 +48,7 @@ class CustomerController {
             }),
         @ApiResponse(
             responseCode = "500",
-            description = "Server error",
+            description = "Internal Server Error",
             content = {
               @Content(
                   mediaType = APPLICATION_JSON_VALUE,
@@ -57,5 +58,35 @@ class CustomerController {
   @GetMapping("/{id}")
   public ResponseEntity<CustomerDto> getCustomerById(@PathVariable Integer id) {
     return ResponseEntity.ok(customerService.getCustomerById(id));
+  }
+
+  @Operation(
+      summary = "Delete customer data by id",
+      responses = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "Customer deleted",
+            content = {@Content()}),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Customer data not found",
+            content = {
+              @Content(
+                  mediaType = APPLICATION_JSON_VALUE,
+                  schema = @Schema(implementation = ApiErrorResponse.class))
+            }),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content = {
+              @Content(
+                  mediaType = APPLICATION_JSON_VALUE,
+                  schema = @Schema(implementation = ApiErrorResponse.class))
+            })
+      })
+  @DeleteMapping("/{id}")
+  public ResponseEntity<String> deleteCustomerById(@PathVariable Integer id) {
+    customerService.deleteCustomerById(id);
+    return ResponseEntity.noContent().build();
   }
 }

@@ -2,28 +2,42 @@ package io.teamchallenge.mentality.customer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import io.teamchallenge.mentality.customer.dto.CustomerDto;
+import io.teamchallenge.mentality.exception.dto.ApiErrorResponse;
 import java.time.LocalDateTime;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
 @ActiveProfiles("test")
+@Sql(scripts = "insert-customer.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(scripts = "reset-customer-seq.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class CustomerControllerTest {
+
+  @LocalServerPort private Integer port;
 
   @Autowired private TestRestTemplate restTemplate;
 
   @Test
-  @Sql(scripts = "insert-customer.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-  @Sql(scripts = "delete-customer.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+  @Order(1)
   void shouldGetCustomerById() {
     int id = 1;
     var expected =
@@ -37,10 +51,13 @@ class CustomerControllerTest {
             "john.png",
             LocalDateTime.parse("2023-12-01T08:30:00"));
 
-    var response = restTemplate.getForEntity("/customers/{id}", CustomerDto.class, id);
-    assertEquals(HttpStatus.OK, response.getStatusCode());
-    assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
-    var body = response.getBody();
+    var resp =
+        restTemplate.getForEntity(
+            "http://localhost:%d/customers/{id}".formatted(port), CustomerDto.class, id);
+
+    assertEquals(HttpStatus.OK, resp.getStatusCode());
+    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
+    var body = resp.getBody();
     assertNotNull(body);
     assertEquals(expected.id(), body.id());
     assertEquals(expected.email(), body.email());
@@ -48,5 +65,56 @@ class CustomerControllerTest {
     assertEquals(expected.lastName(), body.lastName());
     assertEquals(expected.address(), body.address());
     assertEquals(expected.createdAt(), body.createdAt());
+  }
+
+  @Test
+  @Order(2)
+  void shouldDeleteCustomerById() {
+    var resp =
+        restTemplate.exchange(
+            "http://localhost:%d/customers/{id}".formatted(port),
+            HttpMethod.DELETE,
+            HttpEntity.EMPTY,
+            Void.class,
+            1);
+
+    assertEquals(NO_CONTENT, resp.getStatusCode());
+    assertNull(resp.getBody());
+  }
+
+  @Test
+  @Order(3)
+  void shouldReturnErrorWhenDeleteCustomerById() {
+    var resp =
+        restTemplate.exchange(
+            "http://localhost:%d/customers/{id}".formatted(port),
+            HttpMethod.DELETE,
+            HttpEntity.EMPTY,
+            ApiErrorResponse.class,
+            1);
+
+    assertEquals(NOT_FOUND, resp.getStatusCode());
+    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
+    var body = resp.getBody();
+    assertNotNull(body);
+    assertEquals(NOT_FOUND.name(), body.httpStatus());
+    assertEquals(NOT_FOUND.value(), body.httpStatusCode());
+  }
+
+  @Test
+  @Order(4)
+  void shouldReturnNotFoundWhenGetCustomerById() {
+    var expectedHttpStatus = NOT_FOUND;
+
+    var resp =
+        restTemplate.getForEntity(
+            "http://localhost:%d/customers/{id}".formatted(port), ApiErrorResponse.class, 1);
+
+    assertEquals(expectedHttpStatus, resp.getStatusCode());
+    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
+    var body = resp.getBody();
+    assertNotNull(body);
+    assertEquals(expectedHttpStatus.name(), body.httpStatus());
+    assertEquals(expectedHttpStatus.value(), body.httpStatusCode());
   }
 }

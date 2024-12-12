@@ -6,9 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import io.teamchallenge.mentality.customer.dto.CustomerDto;
+import io.teamchallenge.mentality.customer.dto.CustomerPatchDto;
+import io.teamchallenge.mentality.customer.dto.CustomerUpdateDto;
 import io.teamchallenge.mentality.exception.dto.ApiErrorResponse;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.MethodOrderer;
@@ -69,6 +72,67 @@ class CustomerControllerTest {
 
   @Test
   @Order(2)
+  void shouldFullUpdateCustomerById() {
+    var customerUpdateDto =
+        new CustomerUpdateDto(
+            "Doe",
+            "John",
+            "0987-654-321",
+            "321 Helm Street, Texas",
+            "doe.png");
+
+    var resp =
+        restTemplate.exchange(
+            "http://localhost:%d/customers/{id}".formatted(port),
+            HttpMethod.PUT,
+            new HttpEntity<>(customerUpdateDto),
+            CustomerDto.class,
+            1);
+
+    assertEquals(OK, resp.getStatusCode());
+    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
+    var body = resp.getBody();
+    assertNotNull(body);
+    assertEquals(1, body.id());
+    assertEquals("john.doe@example.com", body.email());
+    assertEquals(customerUpdateDto.firstName(), body.firstName());
+    assertEquals(customerUpdateDto.lastName(), body.lastName());
+    assertEquals(customerUpdateDto.phone(), body.phone());
+    assertEquals(customerUpdateDto.address(), body.address());
+    assertEquals(customerUpdateDto.profilePicture(), body.profilePicture());
+    assertNotNull(body.createdAt());
+  }
+
+  @Test
+  @Order(3)
+  void shouldPatchUpdateCustomerById() {
+    var customerPatchDto =
+        new CustomerPatchDto(null, null, "0987-654-321", null, "doe.png");
+
+    var resp =
+        restTemplate.exchange(
+            "http://localhost:%d/customers/{id}".formatted(port),
+            HttpMethod.PATCH,
+            new HttpEntity<>(customerPatchDto),
+            CustomerDto.class,
+            1);
+
+    assertEquals(OK, resp.getStatusCode());
+    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
+    var body = resp.getBody();
+    assertNotNull(body);
+    assertEquals(1, body.id());
+    assertEquals("john.doe@example.com", body.email());
+    assertEquals("Doe", body.firstName());
+    assertEquals("John", body.lastName());
+    assertEquals(customerPatchDto.phone(), body.phone());
+    assertEquals("321 Helm Street, Texas", body.address());
+    assertEquals(customerPatchDto.profilePicture(), body.profilePicture());
+    assertNotNull(body.createdAt());
+  }
+
+  @Test
+  @Order(4)
   void shouldDeleteCustomerById() {
     var resp =
         restTemplate.exchange(
@@ -83,7 +147,7 @@ class CustomerControllerTest {
   }
 
   @Test
-  @Order(3)
+  @Order(5)
   void shouldReturnErrorWhenDeleteCustomerById() {
     var resp =
         restTemplate.exchange(
@@ -102,7 +166,7 @@ class CustomerControllerTest {
   }
 
   @Test
-  @Order(4)
+  @Order(6)
   void shouldReturnNotFoundWhenGetCustomerById() {
     var expectedHttpStatus = NOT_FOUND;
 

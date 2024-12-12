@@ -37,7 +37,6 @@ class CustomerMapperTest {
     var customer = getCustomer();
     var customerUpdateDto =
         new CustomerUpdateDto(
-            "doe.john@example.com",
             "Doe",
             "John",
             "0987-654-321",
@@ -48,7 +47,6 @@ class CustomerMapperTest {
 
     assertNotNull(customer);
     assertEquals(1, customer.getId());
-    assertEquals(customerUpdateDto.email(), customer.getEmail());
     assertEquals(customerUpdateDto.firstName(), customer.getFirstName());
     assertEquals(customerUpdateDto.lastName(), customer.getLastName());
     assertEquals(customerUpdateDto.address(), customer.getAddress());
@@ -61,7 +59,6 @@ class CustomerMapperTest {
     var customer = getCustomer();
     var customerPatchDto =
         new CustomerPatchDto(
-            "doe.john@example.com",
             null,
             null,
             "0987-654-321",
@@ -72,7 +69,6 @@ class CustomerMapperTest {
 
     assertNotNull(customer);
     assertEquals(1, customer.getId());
-    assertEquals(customerPatchDto.email(), customer.getEmail());
     assertNotEquals(customerPatchDto.firstName(), customer.getFirstName());
     assertNotEquals(customerPatchDto.lastName(), customer.getLastName());
     assertEquals(customerPatchDto.phone(), customer.getPhone());

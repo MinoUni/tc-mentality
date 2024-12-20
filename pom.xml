@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.5</version>
+		<version>3.3.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -20,7 +20,7 @@
 		<java.version>21</java.version>
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.target>21</maven.compiler.target>
-		<sonar.organization>teamchallenge-projects</sonar.organization>
+		<sonar.organization>minouni</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<checkstyle-maven-plugin.version>3.3.1</checkstyle-maven-plugin.version>
@@ -28,7 +28,7 @@
 		<moneta.version>1.4.4</moneta.version>
 		<hypersistence-utils.version>3.8.3</hypersistence-utils.version>
 		<liquibase-core.version>4.29.0</liquibase-core.version>
-		<springdoc.version>2.2.0</springdoc.version>
+		<springdoc.version>2.3.0</springdoc.version>
 		<google-api-client.version>2.6.0</google-api-client.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 		<lombok.version>1.18.34</lombok.version>

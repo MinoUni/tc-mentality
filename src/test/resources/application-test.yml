@@ -1,5 +1,7 @@
 logging.level:
-  net.ttddyy.dsproxy.listener: DEBUG
+  net.ttddyy.dsproxy.listener: debug
+  root: info
+  web: info
 spring:
   application:
     name: test

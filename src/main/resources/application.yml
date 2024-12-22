@@ -1,11 +1,13 @@
 server.port: 8080
 logging.level:
-  net.ttddyy.dsproxy.listener: DEBUG
+  net.ttddyy.dsproxy.listener: info
+  web: info
+  root: info
+  liquibase: info
 spring:
   application:
     name: mentality
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
     hikari:
       auto-commit: false
     driver-class-name: org.postgresql.Driver
@@ -25,9 +27,6 @@ spring:
           plan_cache_max_size: 2048
         connection:
           provider_disables_autocommit: true
-  liquibase:
-    enabled: true
-    change-log: classpath:db/changelog/db.changelog-master.yaml
 application:
   google:
     client-id: ${GOOGLE_CLIENT_ID}

@@ -31,14 +31,13 @@ CREATE TABLE categories
 CREATE TABLE products
 (
     id                INT GENERATED ALWAYS AS IDENTITY,
-    sku               VARCHAR(255)  NOT NULL UNIQUE,
-    name              VARCHAR(255)  NOT NULL,
+    sku               VARCHAR(255)   NOT NULL UNIQUE,
+    name              VARCHAR(255)   NOT NULL,
     description       TEXT,
-    price_amount      DECIMAL(8, 2) NOT NULL,
-    sale_price_amount DECIMAL(8, 2),
-    status            VARCHAR(255)  NOT NULL,
-    quantity_in_stock INT           NOT NULL,
-    category          VARCHAR(255),
+    price_amount      DECIMAL(19, 4) NOT NULL CHECK ( price_amount > 0 ),
+    price_currency    VARCHAR(3)     NOT NULL,
+    quantity_in_stock INT            NOT NULL CHECK ( quantity_in_stock > 0 ),
+    category          VARCHAR(255)   NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT fk_category
         FOREIGN KEY (category)
@@ -60,12 +59,11 @@ CREATE TABLE customers_carts
             REFERENCES products (sku)
 );
 
-CREATE TABLE products_images
+CREATE TABLE product_images
 (
-    id             INT GENERATED ALWAYS AS IDENTITY,
-    image_filename VARCHAR(255) NOT NULL,
-    product_sku    VARCHAR(255),
-    PRIMARY KEY (id),
+    index_id    INT          NOT NULL,
+    image_url   VARCHAR(255) NOT NULL,
+    product_sku VARCHAR(255) NOT NULL,
     CONSTRAINT fk_product
         FOREIGN KEY (product_sku)
             REFERENCES products (sku)

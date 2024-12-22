@@ -5,10 +5,10 @@ import io.teamchallenge.mentality.customer.CustomerCart;
 import io.teamchallenge.mentality.order.OrderItem;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,13 +16,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import javax.money.MonetaryAmount;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,6 +28,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CompositeType;
 import org.hibernate.annotations.NaturalId;
+import org.javamoney.moneta.Money;
 
 @Getter
 @Setter
@@ -54,19 +53,10 @@ public class Product {
   @Column(columnDefinition = "TEXT")
   private String description;
 
-  @Transient
   @CompositeType(MonetaryAmountType.class)
   @AttributeOverride(name = "amount", column = @Column(name = "price_amount", nullable = false))
-  private MonetaryAmount price;
-
-  @Transient
-  @CompositeType(MonetaryAmountType.class)
-  @AttributeOverride(name = "amount", column = @Column(name = "sale_price_amount"))
-  private MonetaryAmount salePrice;
-
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private ProductStatus status;
+  @AttributeOverride(name = "currency", column = @Column(name = "price_currency", nullable = false))
+  private Money price;
 
   @Column(nullable = false)
   private Integer quantityInStock;
@@ -76,8 +66,13 @@ public class Product {
   private Category category;
 
   @Builder.Default
-  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-  private Set<ProductImage> images = new HashSet<>();
+  @ElementCollection(targetClass = String.class)
+  @CollectionTable(
+      name = "product_images",
+      joinColumns = @JoinColumn(name = "product_sku", referencedColumnName = "sku"))
+  @OrderColumn(name = "index_id")
+  @Column(name = "image_url", nullable = false)
+  private List<String> imagesUrls = new ArrayList<>();
 
   @Builder.Default
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -86,4 +81,18 @@ public class Product {
   @Builder.Default
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<CustomerCart> customerCarts = new ArrayList<>();
+
+  public BigDecimal getPriceAmount() {
+    return this.price.getNumber().numberValue(BigDecimal.class);
+  }
+
+  public String getPriceCurrency() {
+    return this.price.getCurrency().getCurrencyCode();
+  }
+
+  public Product setCategory(Category category) {
+    this.category = category;
+    this.category.getProducts().add(this);
+    return this;
+  }
 }

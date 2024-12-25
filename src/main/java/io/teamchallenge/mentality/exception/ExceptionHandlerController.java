@@ -29,7 +29,7 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
         .body(new ApiErrorResponse(UNAUTHORIZED, e.getMessage(), req.getDescription(false)));
   }
 
-  @ExceptionHandler({CustomerNotFoundException.class})
+  @ExceptionHandler({CustomerNotFoundException.class, ProductNotFoundException.class})
   public ResponseEntity<Object> handleEntityNotFoundException(
       final RuntimeException e, final WebRequest req) {
     return ResponseEntity.status(NOT_FOUND)

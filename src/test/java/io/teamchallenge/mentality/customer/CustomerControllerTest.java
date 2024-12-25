@@ -29,8 +29,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
 @ActiveProfiles("test")
-@Sql(scripts = "insert-customer.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
-@Sql(scripts = "reset-customer-seq.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
+@Sql(
+    scripts = "classpath:/customer/insert-customer.sql",
+    executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
+@Sql(
+    scripts = "classpath:/customer/reset-customer-seq.sql",
+    executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class CustomerControllerTest {
@@ -74,12 +78,7 @@ class CustomerControllerTest {
   @Order(2)
   void shouldFullUpdateCustomerById() {
     var customerUpdateDto =
-        new CustomerUpdateDto(
-            "Doe",
-            "John",
-            "0987-654-321",
-            "321 Helm Street, Texas",
-            "doe.png");
+        new CustomerUpdateDto("Doe", "John", "0987-654-321", "321 Helm Street, Texas", "doe.png");
 
     var resp =
         restTemplate.exchange(
@@ -106,8 +105,7 @@ class CustomerControllerTest {
   @Test
   @Order(3)
   void shouldPatchUpdateCustomerById() {
-    var customerPatchDto =
-        new CustomerPatchDto(null, null, "0987-654-321", null, "doe.png");
+    var customerPatchDto = new CustomerPatchDto(null, null, "0987-654-321", null, "doe.png");
 
     var resp =
         restTemplate.exchange(

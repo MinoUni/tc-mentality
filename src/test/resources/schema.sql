@@ -27,14 +27,13 @@ CREATE TABLE IF NOT EXISTS categories
 CREATE TABLE IF NOT EXISTS products
 (
     id                INT GENERATED ALWAYS AS IDENTITY,
-    sku               VARCHAR(255)  NOT NULL UNIQUE,
-    name              VARCHAR(255)  NOT NULL,
+    sku               VARCHAR(255)   NOT NULL UNIQUE,
+    name              VARCHAR(255)   NOT NULL,
     description       TEXT,
-    price_amount      DECIMAL(8, 2) NOT NULL,
-    sale_price_amount DECIMAL(8, 2),
-    status            VARCHAR(255)  NOT NULL,
-    quantity_in_stock INT           NOT NULL,
-    category          VARCHAR(255),
+    price_amount      DECIMAL(19, 4) NOT NULL CHECK ( price_amount > 0 ),
+    price_currency    VARCHAR(3)     NOT NULL,
+    quantity_in_stock INT            NOT NULL CHECK ( quantity_in_stock > 0 ),
+    category          VARCHAR(255)   NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT fk_category
         FOREIGN KEY (category)
@@ -56,12 +55,11 @@ CREATE TABLE IF NOT EXISTS customers_carts
             REFERENCES products (sku)
 );
 
-CREATE TABLE IF NOT EXISTS products_images
+CREATE TABLE IF NOT EXISTS product_images
 (
-    id             INT GENERATED ALWAYS AS IDENTITY,
-    image_filename VARCHAR(255) NOT NULL,
-    product_sku    VARCHAR(255),
-    PRIMARY KEY (id),
+    index_id    INT          NOT NULL UNIQUE,
+    image_url   VARCHAR(255) NOT NULL,
+    product_sku VARCHAR(255) NOT NULL,
     CONSTRAINT fk_product
         FOREIGN KEY (product_sku)
             REFERENCES products (sku)

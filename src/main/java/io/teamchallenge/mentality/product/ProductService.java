@@ -3,20 +3,28 @@ package io.teamchallenge.mentality.product;
 import io.teamchallenge.mentality.exception.ProductNotFoundException;
 import io.teamchallenge.mentality.product.dto.ProductDto;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductService {
 
   private final ProductRepository productRepository;
   private final CategoryRepository categoryRepository;
   private final ProductMapper productMapper;
+
+  public ProductService(
+      ProductRepository productRepository,
+      CategoryRepository categoryRepository,
+      @Qualifier("productMapperImpl") ProductMapper productMapper) {
+    this.productRepository = productRepository;
+    this.categoryRepository = categoryRepository;
+    this.productMapper = productMapper;
+  }
 
   public ProductDto getById(Integer id) {
     return productMapper.toProductDto(

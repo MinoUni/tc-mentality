@@ -28,7 +28,8 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-        <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
+        <sonar.coverage.jacoco.xmlReportPath>${project.basedir}/../target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPath>
         <sonar.language>java</sonar.language>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <checkstyle-maven-plugin.version>3.3.1</checkstyle-maven-plugin.version>
@@ -228,7 +229,7 @@
                     </execution>
                     <execution>
                         <id>report</id>
-                        <phase>package</phase>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>

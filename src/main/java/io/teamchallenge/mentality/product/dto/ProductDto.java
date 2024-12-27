@@ -1,6 +1,6 @@
 package io.teamchallenge.mentality.product.dto;
 
-import io.teamchallenge.mentality.product.ProductCategory;
+import io.teamchallenge.mentality.product.category.ProductCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

@@ -3,6 +3,8 @@ package io.teamchallenge.mentality.product;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import io.teamchallenge.mentality.product.category.Category;
+import io.teamchallenge.mentality.product.category.ProductCategory;
 import io.teamchallenge.mentality.product.dto.ProductDto;
 import java.math.BigDecimal;
 import java.util.List;

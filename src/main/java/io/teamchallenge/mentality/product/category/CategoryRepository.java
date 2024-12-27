@@ -1,4 +1,4 @@
-package io.teamchallenge.mentality.product;
+package io.teamchallenge.mentality.product.category;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

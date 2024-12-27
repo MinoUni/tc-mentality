@@ -1,6 +1,7 @@
 package io.teamchallenge.mentality.product;
 
 import io.teamchallenge.mentality.exception.ProductNotFoundException;
+import io.teamchallenge.mentality.product.category.CategoryRepository;
 import io.teamchallenge.mentality.product.dto.ProductDto;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;

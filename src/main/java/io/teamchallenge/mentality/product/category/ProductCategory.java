@@ -1,4 +1,4 @@
-package io.teamchallenge.mentality.product;
+package io.teamchallenge.mentality.product.category;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

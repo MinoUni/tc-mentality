@@ -3,6 +3,7 @@ package io.teamchallenge.mentality.product;
 import io.hypersistence.utils.hibernate.type.money.MonetaryAmountType;
 import io.teamchallenge.mentality.customer.CustomerCart;
 import io.teamchallenge.mentality.order.OrderItem;
+import io.teamchallenge.mentality.product.category.Category;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;

@@ -1,5 +1,6 @@
-package io.teamchallenge.mentality.product;
+package io.teamchallenge.mentality.product.category;
 
+import io.teamchallenge.mentality.product.Product;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,5 +1,6 @@
 package io.teamchallenge.mentality.product.dto;
 
+import io.teamchallenge.mentality.constraint.ValueOfEnum;
 import io.teamchallenge.mentality.product.category.ProductCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +15,7 @@ public record ProductDto(
     @NotBlank String name,
     String description,
     @NotNull @Positive Integer quantityInStock,
-    ProductCategory category,
+    @ValueOfEnum(enumClass = ProductCategory.class) String category,
     @NotNull @Positive BigDecimal priceAmount,
     @NotBlank @Size(min = 3, max = 3) String priceCurrency,
     List<String> imagesUrls) {}

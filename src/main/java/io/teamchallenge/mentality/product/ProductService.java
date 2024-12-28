@@ -2,6 +2,7 @@ package io.teamchallenge.mentality.product;
 
 import io.teamchallenge.mentality.exception.ProductNotFoundException;
 import io.teamchallenge.mentality.product.category.CategoryRepository;
+import io.teamchallenge.mentality.product.category.ProductCategory;
 import io.teamchallenge.mentality.product.dto.ProductDto;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -41,8 +42,9 @@ public class ProductService {
   @Transactional
   public Integer create(ProductDto productDto) {
     Product product = productMapper.toEntity(productDto);
+    ProductCategory category = ProductCategory.valueOf(productDto.category());
     product
-        .setCategory(categoryRepository.getReferenceById(productDto.category().getId()))
+        .setCategory(categoryRepository.getReferenceById(category.getId()))
         .setSku(UUID.randomUUID().toString()); // ? replace with SKU generator func
     return productRepository.save(product).getId();
   }

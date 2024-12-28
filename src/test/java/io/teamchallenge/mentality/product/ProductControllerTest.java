@@ -42,7 +42,7 @@ class ProductControllerTest {
             "Black Carpet",
             "Description",
             100,
-            ProductCategory.CARPETS,
+            ProductCategory.CARPETS.name(),
             BigDecimal.valueOf(425.25),
             "USD",
             List.of("/image_1.jpg", "/image_2.jpg"));
@@ -62,7 +62,7 @@ class ProductControllerTest {
             "Yoga Carpet Majestic K60",
             "Product description",
             100,
-            ProductCategory.CARPETS,
+            ProductCategory.CARPETS.name(),
             BigDecimal.valueOf(406.56),
             "USD",
             List.of(

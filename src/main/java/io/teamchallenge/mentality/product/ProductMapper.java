@@ -2,11 +2,14 @@ package io.teamchallenge.mentality.product;
 
 import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 
+import io.teamchallenge.mentality.product.category.Category;
 import io.teamchallenge.mentality.product.dto.ProductDto;
+import io.teamchallenge.mentality.product.dto.ProductMinimalDto;
 import org.javamoney.moneta.Money;
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
@@ -18,9 +21,12 @@ import org.mapstruct.ReportingPolicy;
     imports = {Money.class})
 public interface ProductMapper {
 
-  @Mapping(
-      target = "category",
-      expression = "java(ProductCategory.valueOf(product.getCategory().getName()))")
+  @Named("getCategoryByName")
+  default String getCategoryByName(Category category) {
+    return category.getName();
+  }
+
+  @Mapping(target = "category", qualifiedByName = "getCategoryByName", source = "category")
   ProductDto toProductDto(Product product);
 
   @Mapping(target = "id", ignore = true)
@@ -30,4 +36,7 @@ public interface ProductMapper {
       target = "price",
       expression = "java(Money.of(productDto.priceAmount(), productDto.priceCurrency()))")
   Product toEntity(ProductDto productDto);
+
+  @Mapping(target = "category", qualifiedByName = "getCategoryByName", source = "category")
+  ProductMinimalDto toProductMinimalDto(Product product);
 }

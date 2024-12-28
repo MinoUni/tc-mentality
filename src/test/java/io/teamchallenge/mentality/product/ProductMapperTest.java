@@ -36,7 +36,7 @@ class ProductMapperTest {
     assertEquals(product.getSku(), dto.sku());
     assertEquals(product.getName(), dto.name());
     assertEquals(product.getDescription(), dto.description());
-    assertEquals(product.getCategory().getName(), dto.category().name());
+    assertEquals(product.getCategory().getName(), dto.category());
     assertEquals(product.getQuantityInStock(), dto.quantityInStock());
     assertEquals(0, product.getPriceAmount().compareTo(dto.priceAmount()));
     assertEquals(product.getPriceCurrency(), dto.priceCurrency());
@@ -52,7 +52,7 @@ class ProductMapperTest {
             "Black Carpet",
             "Description",
             100,
-            ProductCategory.CARPETS,
+            ProductCategory.CARPETS.name(),
             BigDecimal.valueOf(425.25),
             "USD",
             List.of("/image_1.jpg", "/image_2.jpg"));

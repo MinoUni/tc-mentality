@@ -1,6 +1,7 @@
 package io.teamchallenge.mentality.product;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -45,7 +46,7 @@ class ProductController {
             description = "Product data not found",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             }),
         @ApiResponse(
@@ -53,7 +54,7 @@ class ProductController {
             description = "Internal Server Error",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             })
       })
@@ -64,7 +65,7 @@ class ProductController {
 
   @Operation(
       summary = "Create new product",
-      description = "Ignore `id`, `sku` props, they initialized on server side",
+      description = "Left `id`, `sku` props values with `null`, they initialized on server side",
       responses = {
         @ApiResponse(
             responseCode = "201",
@@ -77,11 +78,18 @@ class ProductController {
             },
             content = {@Content}),
         @ApiResponse(
+            responseCode = "400",
+            description = "Invalid request from client",
+            content =
+                @Content(
+                    mediaType = APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ApiErrorResponse.class))),
+        @ApiResponse(
             responseCode = "409",
             description = "Product already exists",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             }),
         @ApiResponse(
@@ -89,7 +97,7 @@ class ProductController {
             description = "Internal Server Error",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             })
       })

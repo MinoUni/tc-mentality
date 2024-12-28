@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS categories
     PRIMARY KEY (id),
     CONSTRAINT fk_category
         FOREIGN KEY (parent_category)
-            REFERENCES categories (name)
+            REFERENCES categories (name) ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS products
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS products
     PRIMARY KEY (id),
     CONSTRAINT fk_category
         FOREIGN KEY (category)
-            REFERENCES categories (name)
+            REFERENCES categories (name) ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS customers_carts
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS customers_carts
     PRIMARY KEY (customer_email, product_sku),
     CONSTRAINT fk_customer
         FOREIGN KEY (customer_email)
-            REFERENCES customers (email),
+            REFERENCES customers (email) ON UPDATE CASCADE,
     CONSTRAINT fk_product
         FOREIGN KEY (product_sku)
             REFERENCES products (sku)
@@ -57,12 +57,12 @@ CREATE TABLE IF NOT EXISTS customers_carts
 
 CREATE TABLE IF NOT EXISTS product_images
 (
-    index_id    INT          NOT NULL UNIQUE,
+    index_id INT NOT NULL,
     image_url   VARCHAR(255) NOT NULL,
     product_sku VARCHAR(255) NOT NULL,
     CONSTRAINT fk_product
         FOREIGN KEY (product_sku)
-            REFERENCES products (sku)
+            REFERENCES products (sku) ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS payment_details
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS orders
             REFERENCES payment_details (id),
     CONSTRAINT fk_customer
         FOREIGN KEY (customer_email)
-            REFERENCES customers (email)
+            REFERENCES customers (email) ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS orders_items
@@ -103,10 +103,10 @@ CREATE TABLE IF NOT EXISTS orders_items
     PRIMARY KEY (product_sku, order_code),
     CONSTRAINT fk_product
         FOREIGN KEY (product_sku)
-            REFERENCES products (sku),
+            REFERENCES products (sku) ON UPDATE CASCADE,
     CONSTRAINT fk_order
         FOREIGN KEY (order_code)
-            REFERENCES orders (order_code)
+            REFERENCES orders (order_code) ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS notifications
@@ -121,5 +121,5 @@ CREATE TABLE IF NOT EXISTS notifications
     PRIMARY KEY (id),
     CONSTRAINT fk_order
         FOREIGN KEY (order_code)
-            REFERENCES orders (order_code)
+            REFERENCES orders (order_code) ON UPDATE CASCADE
 );

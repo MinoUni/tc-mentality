@@ -2,7 +2,7 @@
 
 -- changeset maksr:1733597607860-1
 -- init database schema
-CREATE TABLE customers
+CREATE TABLE IF NOT EXISTS customers
 (
     id              INT GENERATED ALWAYS AS IDENTITY,
     email           VARCHAR(255) NOT NULL UNIQUE,
@@ -15,7 +15,7 @@ CREATE TABLE customers
     PRIMARY KEY (id)
 );
 
-CREATE TABLE categories
+CREATE TABLE IF NOT EXISTS categories
 (
     id              INT GENERATED ALWAYS AS IDENTITY,
     name            VARCHAR(255) NOT NULL UNIQUE,
@@ -25,10 +25,10 @@ CREATE TABLE categories
     PRIMARY KEY (id),
     CONSTRAINT fk_category
         FOREIGN KEY (parent_category)
-            REFERENCES categories (name)
+            REFERENCES categories (name) ON UPDATE CASCADE
 );
 
-CREATE TABLE products
+CREATE TABLE IF NOT EXISTS products
 (
     id                INT GENERATED ALWAYS AS IDENTITY,
     sku               VARCHAR(255)   NOT NULL UNIQUE,
@@ -41,10 +41,10 @@ CREATE TABLE products
     PRIMARY KEY (id),
     CONSTRAINT fk_category
         FOREIGN KEY (category)
-            REFERENCES categories (name)
+            REFERENCES categories (name) ON UPDATE CASCADE
 );
 
-CREATE TABLE customers_carts
+CREATE TABLE IF NOT EXISTS customers_carts
 (
     customer_email VARCHAR(255)  NOT NULL,
     product_sku    VARCHAR(255)  NOT NULL,
@@ -53,23 +53,23 @@ CREATE TABLE customers_carts
     PRIMARY KEY (customer_email, product_sku),
     CONSTRAINT fk_customer
         FOREIGN KEY (customer_email)
-            REFERENCES customers (email),
+            REFERENCES customers (email) ON UPDATE CASCADE,
     CONSTRAINT fk_product
         FOREIGN KEY (product_sku)
             REFERENCES products (sku)
 );
 
-CREATE TABLE product_images
+CREATE TABLE IF NOT EXISTS product_images
 (
     index_id    INT          NOT NULL,
     image_url   VARCHAR(255) NOT NULL,
     product_sku VARCHAR(255) NOT NULL,
     CONSTRAINT fk_product
         FOREIGN KEY (product_sku)
-            REFERENCES products (sku)
+            REFERENCES products (sku) ON UPDATE CASCADE
 );
 
-CREATE TABLE payment_details
+CREATE TABLE IF NOT EXISTS payment_details
 (
     id             INT GENERATED ALWAYS AS IDENTITY,
     price_amount   DECIMAL(8, 2),
@@ -80,7 +80,7 @@ CREATE TABLE payment_details
     PRIMARY KEY (id)
 );
 
-CREATE TABLE orders
+CREATE TABLE IF NOT EXISTS orders
 (
     id             INT GENERATED ALWAYS AS IDENTITY,
     order_code     VARCHAR(255) NOT NULL UNIQUE,
@@ -95,10 +95,10 @@ CREATE TABLE orders
             REFERENCES payment_details (id),
     CONSTRAINT fk_customer
         FOREIGN KEY (customer_email)
-            REFERENCES customers (email)
+            REFERENCES customers (email) ON UPDATE CASCADE
 );
 
-CREATE TABLE orders_items
+CREATE TABLE IF NOT EXISTS orders_items
 (
     product_sku  VARCHAR(255)  NOT NULL,
     order_code   VARCHAR(255)  NOT NULL,
@@ -107,13 +107,13 @@ CREATE TABLE orders_items
     PRIMARY KEY (product_sku, order_code),
     CONSTRAINT fk_product
         FOREIGN KEY (product_sku)
-            REFERENCES products (sku),
+            REFERENCES products (sku) ON UPDATE CASCADE,
     CONSTRAINT fk_order
         FOREIGN KEY (order_code)
-            REFERENCES orders (order_code)
+            REFERENCES orders (order_code) ON UPDATE CASCADE
 );
 
-CREATE TABLE notifications
+CREATE TABLE IF NOT EXISTS notifications
 (
     id         INT GENERATED ALWAYS AS IDENTITY,
     order_code VARCHAR(255) NOT NULL,
@@ -125,5 +125,5 @@ CREATE TABLE notifications
     PRIMARY KEY (id),
     CONSTRAINT fk_order
         FOREIGN KEY (order_code)
-            REFERENCES orders (order_code)
+            REFERENCES orders (order_code) ON UPDATE CASCADE
 );

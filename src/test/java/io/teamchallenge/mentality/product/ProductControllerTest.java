@@ -8,11 +8,7 @@ import io.teamchallenge.mentality.product.category.ProductCategory;
 import io.teamchallenge.mentality.product.dto.ProductDto;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -23,12 +19,11 @@ import org.springframework.test.context.jdbc.Sql;
 
 @ActiveProfiles("test")
 @Sql(
-    scripts = "classpath:/product/insert_test-data.sql",
+    scripts = "classpath:/product/insert-products.sql",
     executionPhase = Sql.ExecutionPhase.BEFORE_TEST_CLASS)
 @Sql(
-    scripts = "classpath:/product/clean_test-data.sql",
+    scripts = "classpath:/product/delete-products.sql",
     executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ProductControllerTest {
 
@@ -37,13 +32,13 @@ class ProductControllerTest {
   @Autowired private TestRestTemplate restTemplate;
 
   @Test
-  @Order(1)
-  void shouldCreateNewProduct() {
-    final String expectedUrl = "http://localhost:%d/products/1".formatted(port);
+  void create_shouldCreateNewProduct() {
+    final int id = 2;
+    final String expectedUrl = "http://localhost:%d/products/%d".formatted(port, id);
     ProductDto productDto =
         new ProductDto(
-            1,
-            UUID.randomUUID().toString(),
+            null,
+            null,
             "Black Carpet",
             "Description",
             100,
@@ -58,20 +53,22 @@ class ProductControllerTest {
   }
 
   @Test
-  @Order(2)
-  void shouldGetOneById() {
+  void getOneById_shouldFindProductById() {
     final int id = 1;
     ProductDto expected =
         new ProductDto(
             id,
             null,
-            "Black Carpet",
-            "Description",
+            "Yoga Carpet Majestic K60",
+            "Product description",
             100,
             ProductCategory.CARPETS,
-            BigDecimal.valueOf(425.25),
+            BigDecimal.valueOf(406.56),
             "USD",
-            List.of("/image_1.jpg", "/image_2.jpg"));
+            List.of(
+                "https://io.ment.strg/products/car_majk60_1.png",
+                "https://io.ment.strg/products/car_majk60_2.png",
+                "https://io.ment.strg/products/car_majk60_3.png"));
 
     var resp = restTemplate.getForEntity("/products/{id}", ProductDto.class, id);
 

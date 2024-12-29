@@ -1,6 +1,7 @@
 package io.teamchallenge.mentality.customer;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -49,7 +50,7 @@ class CustomerController {
             description = "Customer data not found",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             }),
         @ApiResponse(
@@ -57,7 +58,7 @@ class CustomerController {
             description = "Internal Server Error",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             })
       })
@@ -78,7 +79,7 @@ class CustomerController {
             description = "Customer data not found",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             }),
         @ApiResponse(
@@ -86,7 +87,7 @@ class CustomerController {
             description = "Internal Server Error",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             })
       })
@@ -112,7 +113,7 @@ class CustomerController {
             description = "Customer data not found",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             }),
         @ApiResponse(
@@ -120,7 +121,7 @@ class CustomerController {
             description = "Internal Server Error",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             })
       })
@@ -146,7 +147,7 @@ class CustomerController {
             description = "Customer data not found",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             }),
         @ApiResponse(
@@ -154,12 +155,13 @@ class CustomerController {
             description = "Internal Server Error",
             content = {
               @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
                   schema = @Schema(implementation = ApiErrorResponse.class))
             })
       })
   @PatchMapping("/{id}")
-  public ResponseEntity<CustomerDto> patch(@PathVariable Integer id, @RequestBody CustomerPatchDto customer) {
+  public ResponseEntity<CustomerDto> patch(
+      @PathVariable Integer id, @RequestBody CustomerPatchDto customer) {
     return ResponseEntity.ok(customerService.patchUpdateCustomer(id, customer));
   }
 }

@@ -8,6 +8,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 
 import io.teamchallenge.mentality.customer.dto.CustomerDto;
 import io.teamchallenge.mentality.customer.dto.CustomerPatchDto;
@@ -156,7 +157,7 @@ class CustomerControllerTest {
             1);
 
     assertEquals(NOT_FOUND, resp.getStatusCode());
-    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
+    assertEquals(APPLICATION_PROBLEM_JSON, resp.getHeaders().getContentType());
     var body = resp.getBody();
     assertNotNull(body);
     assertEquals(NOT_FOUND.name(), body.httpStatus());
@@ -173,7 +174,7 @@ class CustomerControllerTest {
             "http://localhost:%d/customers/{id}".formatted(port), ApiErrorResponse.class, 1);
 
     assertEquals(expectedHttpStatus, resp.getStatusCode());
-    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
+    assertEquals(APPLICATION_PROBLEM_JSON, resp.getHeaders().getContentType());
     var body = resp.getBody();
     assertNotNull(body);
     assertEquals(expectedHttpStatus.name(), body.httpStatus());

@@ -4,9 +4,15 @@ import io.teamchallenge.mentality.exception.ProductNotFoundException;
 import io.teamchallenge.mentality.product.category.CategoryRepository;
 import io.teamchallenge.mentality.product.category.ProductCategory;
 import io.teamchallenge.mentality.product.dto.ProductDto;
+import io.teamchallenge.mentality.product.dto.ProductFilter;
+import io.teamchallenge.mentality.product.dto.ProductMinimalDto;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,5 +53,12 @@ public class ProductService {
         .setCategory(categoryRepository.getReferenceById(category.getId()))
         .setSku(UUID.randomUUID().toString()); // ? replace with SKU generator func
     return productRepository.save(product).getId();
+  }
+
+  public PagedModel<ProductMinimalDto> getAll(ProductFilter filter, Pageable pageable) {
+    Specification<Product> spec = filter.toSpecification();
+    Page<Product> products = productRepository.findAll(spec, pageable);
+    Page<ProductMinimalDto> productDto = products.map(productMapper::toProductMinimalDto);
+    return new PagedModel<>(productDto);
   }
 }

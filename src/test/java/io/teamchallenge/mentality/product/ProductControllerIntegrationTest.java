@@ -3,7 +3,9 @@ package io.teamchallenge.mentality.product;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 
+import io.teamchallenge.mentality.exception.dto.ApiErrorResponse;
 import io.teamchallenge.mentality.product.category.ProductCategory;
 import io.teamchallenge.mentality.product.dto.ProductDto;
 import java.math.BigDecimal;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -33,7 +36,7 @@ class ProductControllerIntegrationTest {
 
   @Test
   void create_shouldCreateNewProduct() {
-    final int id = 2;
+    final int id = 3;
     final String expectedUrl = "http://localhost:%d/products/%d".formatted(port, id);
     ProductDto productDto =
         new ProductDto(
@@ -87,5 +90,33 @@ class ProductControllerIntegrationTest {
     assertEquals(0, expected.priceAmount().compareTo(productDto.priceAmount()));
     assertEquals(expected.priceCurrency(), productDto.priceCurrency());
     assertEquals(expected.imagesUrls(), productDto.imagesUrls());
+  }
+
+  @Test
+  void delete_shouldDeleteAndReturnNoContentResponse() {
+    final int id = 2;
+
+    var resp = restTemplate.exchange("/products/{id}", HttpMethod.DELETE, null, String.class, id);
+
+    assertEquals(HttpStatus.NO_CONTENT, resp.getStatusCode());
+  }
+
+  @Test
+  void delete_shouldReturnNotFoundResponse() {
+    HttpStatus notFound = HttpStatus.NOT_FOUND;
+    final int id = 5;
+
+    var resp =
+        restTemplate.exchange(
+            "/products/{id}", HttpMethod.DELETE, null, ApiErrorResponse.class, id);
+    ApiErrorResponse errorResp = resp.getBody();
+
+    assertEquals(notFound, resp.getStatusCode());
+    assertEquals(APPLICATION_PROBLEM_JSON, resp.getHeaders().getContentType());
+    assertNotNull(errorResp);
+    assertEquals(notFound.value(), errorResp.httpStatusCode());
+    assertEquals(notFound.name(), errorResp.httpStatus());
+    assertEquals("Product with id=%d not found".formatted(id), errorResp.errorMessage());
+    assertEquals("/products/%d".formatted(id), errorResp.path());
   }
 }

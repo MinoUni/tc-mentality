@@ -4,7 +4,7 @@ WHERE product_sku IN (SELECT product_sku FROM products);
 
 DELETE
 FROM products
-WHERE id IN (1, 2);
+WHERE id IN (1, 3);
 
 DELETE
 FROM categories

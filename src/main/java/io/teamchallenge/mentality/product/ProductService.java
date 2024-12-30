@@ -3,6 +3,7 @@ package io.teamchallenge.mentality.product;
 import io.teamchallenge.mentality.exception.ProductNotFoundException;
 import io.teamchallenge.mentality.product.category.CategoryRepository;
 import io.teamchallenge.mentality.product.category.ProductCategory;
+import io.teamchallenge.mentality.product.constant.ProductConstant;
 import io.teamchallenge.mentality.product.dto.ProductDto;
 import io.teamchallenge.mentality.product.dto.ProductFilter;
 import io.teamchallenge.mentality.product.dto.ProductMinimalDto;
@@ -40,7 +41,7 @@ public class ProductService {
             .findById(id)
             .orElseThrow(
                 () -> {
-                  log.info("Product with id=`{}` not found!", id);
+                  log.info(ProductConstant.PRODUCT_WITH_ID_NOT_FOUND, id);
                   return new ProductNotFoundException(id);
                 }));
   }
@@ -60,5 +61,16 @@ public class ProductService {
     Page<Product> products = productRepository.findAll(spec, pageable);
     Page<ProductMinimalDto> productDto = products.map(productMapper::toProductMinimalDto);
     return new PagedModel<>(productDto);
+  }
+
+  @Transactional
+  public void deleteById(Integer id) {
+    if (!productRepository.existsById(id)) {
+      log.info(ProductConstant.PRODUCT_WITH_ID_NOT_FOUND, id);
+      throw new ProductNotFoundException(id);
+    }
+    Product product = productRepository.getReferenceById(id);
+    productRepository.delete(product);
+    log.info("Product with id=`{}` deleted", id);
   }
 }

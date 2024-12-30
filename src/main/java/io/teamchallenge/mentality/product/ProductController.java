@@ -19,6 +19,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -73,14 +74,7 @@ class ProductController {
       summary = "Find page of products",
       description = "Any element of filter can't be a `null`",
       responses = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Page of products found",
-            content = {
-              @Content(
-                  mediaType = APPLICATION_JSON_VALUE,
-                  schema = @Schema(implementation = PagedModel.class))
-            }),
+        @ApiResponse(responseCode = "200", description = "Page of products found"),
         @ApiResponse(
             responseCode = "400",
             description = "Invalid request from client",
@@ -160,5 +154,34 @@ class ProductController {
                 .buildAndExpand(productId)
                 .toUri())
         .build();
+  }
+
+  @Operation(
+      summary = "Delete product",
+      responses = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "Product deleted",
+            content = {@Content}),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Product not found",
+            content =
+                @Content(
+                    mediaType = APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ApiErrorResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content = {
+              @Content(
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
+                  schema = @Schema(implementation = ApiErrorResponse.class))
+            })
+      })
+  @DeleteMapping("/{id}")
+  public ResponseEntity<String> delete(@PathVariable Integer id) {
+    productService.deleteById(id);
+    return ResponseEntity.noContent().build();
   }
 }

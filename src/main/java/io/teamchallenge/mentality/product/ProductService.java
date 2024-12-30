@@ -73,4 +73,22 @@ public class ProductService {
     productRepository.delete(product);
     log.info("Product with id=`{}` deleted", id);
   }
+
+  @Transactional
+  public ProductDto update(Integer id, ProductDto productDto) {
+    Product product =
+        productRepository
+            .findById(id)
+            .orElseThrow(
+                () -> {
+                  log.info(ProductConstant.PRODUCT_WITH_ID_NOT_FOUND, id);
+                  return new ProductNotFoundException(id);
+                });
+    productMapper.updateWithNull(productDto, product);
+    product.setCategory(
+        categoryRepository.getReferenceById(
+            ProductCategory.valueOf(productDto.category()).getId()));
+    Product updatedProduct = productRepository.save(product);
+    return productMapper.toProductDto(updatedProduct);
+  }
 }

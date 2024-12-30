@@ -10,11 +10,13 @@ import io.teamchallenge.mentality.product.category.ProductCategory;
 import io.teamchallenge.mentality.product.dto.ProductDto;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
@@ -36,7 +38,7 @@ class ProductControllerIntegrationTest {
 
   @Test
   void create_shouldCreateNewProduct() {
-    final int id = 3;
+    final int id = 4;
     final String expectedUrl = "http://localhost:%d/products/%d".formatted(port, id);
     ProductDto productDto =
         new ProductDto(
@@ -104,7 +106,7 @@ class ProductControllerIntegrationTest {
   @Test
   void delete_shouldReturnNotFoundResponse() {
     HttpStatus notFound = HttpStatus.NOT_FOUND;
-    final int id = 5;
+    final int id = 15;
 
     var resp =
         restTemplate.exchange(
@@ -118,5 +120,77 @@ class ProductControllerIntegrationTest {
     assertEquals(notFound.name(), errorResp.httpStatus());
     assertEquals("Product with id=%d not found".formatted(id), errorResp.errorMessage());
     assertEquals("/products/%d".formatted(id), errorResp.path());
+  }
+
+  @Test
+  void update_shouldReturnUpdateProductDto() {
+    final int id = 3;
+    ProductDto productDtoReq =
+        new ProductDto(
+            15,
+            UUID.randomUUID().toString(),
+            "Yoga Carpet Majestic K160",
+            "Product description",
+            16,
+            ProductCategory.CARPETS.name(),
+            BigDecimal.valueOf(16.16),
+            "USD",
+            List.of("https://io.ment.strg/products/car_majk60_1.png"));
+
+    var resp =
+        restTemplate.exchange(
+            "/products/{id}",
+            HttpMethod.PUT,
+            new HttpEntity<>(productDtoReq),
+            ProductDto.class,
+            id);
+    ProductDto productDtoResp = resp.getBody();
+
+    assertEquals(HttpStatus.OK, resp.getStatusCode());
+    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
+    assertNotNull(productDtoResp);
+    assertEquals(id, productDtoResp.id());
+    assertNotNull(productDtoResp.sku());
+    assertEquals(productDtoReq.name(), productDtoResp.name());
+    assertEquals(productDtoReq.description(), productDtoResp.description());
+    assertEquals(productDtoReq.quantityInStock(), productDtoResp.quantityInStock());
+    assertEquals(productDtoReq.category(), productDtoResp.category());
+    assertEquals(0, productDtoReq.priceAmount().compareTo(productDtoResp.priceAmount()));
+    assertEquals(productDtoReq.priceCurrency(), productDtoResp.priceCurrency());
+    assertEquals(2, productDtoResp.imagesUrls().size());
+  }
+
+  @Test
+  void update_shouldReturnProductNotFoundResponse() {
+    HttpStatus notFound = HttpStatus.NOT_FOUND;
+    final int id = 15;
+    final ProductDto productDto =
+        new ProductDto(
+            id,
+            null,
+            "Yoga Carpet Majestic K60",
+            "Product description",
+            100,
+            ProductCategory.CARPETS.name(),
+            BigDecimal.valueOf(406.56),
+            "USD",
+            List.of("https://io.ment.strg/products/car_majk60_1.png"));
+
+    var resp =
+        restTemplate.exchange(
+            "/products/{id}",
+            HttpMethod.PUT,
+            new HttpEntity<>(productDto),
+            ApiErrorResponse.class,
+            id);
+    ApiErrorResponse errorResponse = resp.getBody();
+
+    assertEquals(notFound, resp.getStatusCode());
+    assertEquals(APPLICATION_PROBLEM_JSON, resp.getHeaders().getContentType());
+    assertNotNull(errorResponse);
+    assertEquals(notFound.value(), errorResponse.httpStatusCode());
+    assertEquals(notFound.name(), errorResponse.httpStatus());
+    assertEquals("Product with id=%d not found".formatted(id), errorResponse.errorMessage());
+    assertEquals("/products/%d".formatted(id), errorResponse.path());
   }
 }

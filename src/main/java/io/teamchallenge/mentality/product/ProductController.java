@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -146,7 +147,7 @@ class ProductController {
             })
       })
   @PostMapping
-  public ResponseEntity<String> create(@RequestBody @Valid ProductDto productDto) {
+  public ResponseEntity<String> create(@Valid @RequestBody ProductDto productDto) {
     Integer productId = productService.create(productDto);
     return ResponseEntity.created(
             ServletUriComponentsBuilder.fromCurrentRequest()
@@ -183,5 +184,34 @@ class ProductController {
   public ResponseEntity<String> delete(@PathVariable Integer id) {
     productService.deleteById(id);
     return ResponseEntity.noContent().build();
+  }
+
+  @Operation(
+      summary = "Update product details",
+      responses = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Product details updated",
+            content = {@Content}),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Product not found",
+            content =
+                @Content(
+                    mediaType = APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ApiErrorResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content = {
+              @Content(
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
+                  schema = @Schema(implementation = ApiErrorResponse.class))
+            })
+      })
+  @PutMapping("/{id}")
+  public ResponseEntity<ProductDto> update(
+      @PathVariable Integer id, @Valid @RequestBody ProductDto productDto) {
+    return ResponseEntity.ok(productService.update(id, productDto));
   }
 }

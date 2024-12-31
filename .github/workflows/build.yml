@@ -10,21 +10,24 @@ jobs:
     name: Build and Analyze
     runs-on: [ ubuntu-latest ]
     env:
+      DB_URL: jdbc:postgresql://localhost:5432/mentality_test
+      DB_USERNAME: admin
+      DB_PASSWORD: pass
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
     services:
       postgres:
-        image: postgres
+        image: 'postgres:latest'
+        ports:
+          - 5432:5432
         env:
-          POSTGRES_PASSWORD: pass
-          POSTGRES_USER: admin
           POSTGRES_DB: mentality_test
+          POSTGRES_USER: ${DB_PASSWORD}
+          POSTGRES_PASSWORD: ${DB_PASSWORD}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        ports:
-          - 5432:5432
     steps:
       - uses: actions/checkout@v4
         with:

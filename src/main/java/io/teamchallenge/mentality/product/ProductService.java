@@ -1,5 +1,8 @@
 package io.teamchallenge.mentality.product;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.teamchallenge.mentality.exception.JsonException;
 import io.teamchallenge.mentality.exception.ProductNotFoundException;
 import io.teamchallenge.mentality.product.category.CategoryRepository;
 import io.teamchallenge.mentality.product.category.ProductCategory;
@@ -7,9 +10,10 @@ import io.teamchallenge.mentality.product.constant.ProductConstant;
 import io.teamchallenge.mentality.product.dto.ProductDto;
 import io.teamchallenge.mentality.product.dto.ProductFilter;
 import io.teamchallenge.mentality.product.dto.ProductMinimalDto;
+import java.io.IOException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,31 +23,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductService {
 
   private final ProductRepository productRepository;
   private final CategoryRepository categoryRepository;
   private final ProductMapper productMapper;
-
-  public ProductService(
-      ProductRepository productRepository,
-      CategoryRepository categoryRepository,
-      @Qualifier("productMapperImpl") ProductMapper productMapper) {
-    this.productRepository = productRepository;
-    this.categoryRepository = categoryRepository;
-    this.productMapper = productMapper;
-  }
+  private final ObjectMapper objectMapper;
 
   public ProductDto getById(Integer id) {
-    return productMapper.toProductDto(
-        productRepository
-            .findById(id)
-            .orElseThrow(
-                () -> {
-                  log.info(ProductConstant.PRODUCT_WITH_ID_NOT_FOUND, id);
-                  return new ProductNotFoundException(id);
-                }));
+    return productMapper.toProductDto(getProduct(id));
   }
 
   @Transactional
@@ -52,7 +42,8 @@ public class ProductService {
     ProductCategory category = ProductCategory.valueOf(productDto.category());
     product
         .setCategory(categoryRepository.getReferenceById(category.getId()))
-        .setSku(UUID.randomUUID().toString()); // ? replace with SKU generator func
+        // ? replace with SKU generator func
+        .setSku(UUID.randomUUID().toString());
     return productRepository.save(product).getId();
   }
 
@@ -75,20 +66,42 @@ public class ProductService {
   }
 
   @Transactional
-  public ProductDto update(Integer id, ProductDto productDto) {
-    Product product =
-        productRepository
-            .findById(id)
-            .orElseThrow(
-                () -> {
-                  log.info(ProductConstant.PRODUCT_WITH_ID_NOT_FOUND, id);
-                  return new ProductNotFoundException(id);
-                });
+  public ProductDto putUpdate(Integer id, ProductDto productDto) {
+    Product product = getProduct(id);
     productMapper.updateWithNull(productDto, product);
     product.setCategory(
         categoryRepository.getReferenceById(
             ProductCategory.valueOf(productDto.category()).getId()));
     Product updatedProduct = productRepository.save(product);
     return productMapper.toProductDto(updatedProduct);
+  }
+
+  @Transactional
+  public ProductDto patchUpdate(Integer id, JsonNode patchNode) {
+    Product product = getProduct(id);
+    ProductDto productDto = productMapper.toProductDto(product);
+    try {
+      objectMapper.readerForUpdating(productDto).readValue(patchNode);
+    } catch (IOException e) {
+      log.warn(
+          "Failed to convert JSON node to `{}` with id=`{}`",
+          ProductDto.class.getSimpleName(),
+          id,
+          e);
+      throw new JsonException(ProductDto.class, id);
+    }
+    productMapper.updateWithNull(productDto, product);
+    Product updatedProduct = productRepository.save(product);
+    return productMapper.toProductDto(updatedProduct);
+  }
+
+  private Product getProduct(Integer id) {
+    return productRepository
+        .findById(id)
+        .orElseThrow(
+            () -> {
+              log.info(ProductConstant.PRODUCT_WITH_ID_NOT_FOUND, id);
+              return new ProductNotFoundException(id);
+            });
   }
 }

@@ -3,6 +3,7 @@ package io.teamchallenge.mentality.product;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -192,7 +194,11 @@ class ProductController {
         @ApiResponse(
             responseCode = "200",
             description = "Product details updated",
-            content = {@Content}),
+            content = {
+              @Content(
+                  mediaType = APPLICATION_JSON_VALUE,
+                  schema = @Schema(implementation = ProductDto.class))
+            }),
         @ApiResponse(
             responseCode = "404",
             description = "Product not found",
@@ -212,6 +218,39 @@ class ProductController {
   @PutMapping("/{id}")
   public ResponseEntity<ProductDto> update(
       @PathVariable Integer id, @Valid @RequestBody ProductDto productDto) {
-    return ResponseEntity.ok(productService.update(id, productDto));
+    return ResponseEntity.ok(productService.putUpdate(id, productDto));
+  }
+
+  @Operation(
+      summary = "Update product details",
+      responses = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Product details updated",
+            content = {
+              @Content(
+                  mediaType = APPLICATION_JSON_VALUE,
+                  schema = @Schema(implementation = ProductDto.class))
+            }),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Product not found",
+            content =
+                @Content(
+                    mediaType = APPLICATION_PROBLEM_JSON_VALUE,
+                    schema = @Schema(implementation = ApiErrorResponse.class))),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal Server Error",
+            content = {
+              @Content(
+                  mediaType = APPLICATION_PROBLEM_JSON_VALUE,
+                  schema = @Schema(implementation = ApiErrorResponse.class))
+            })
+      })
+  @PatchMapping("/{id}")
+  public ResponseEntity<ProductDto> patch(
+      @PathVariable Integer id, @RequestBody JsonNode patchNode) {
+    return ResponseEntity.ok(productService.patchUpdate(id, patchNode));
   }
 }

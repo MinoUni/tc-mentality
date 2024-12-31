@@ -44,7 +44,7 @@ public interface ProductMapper {
       expression = "java(Money.of(productDto.priceAmount(), productDto.priceCurrency()))")
   Product toEntity(ProductDto productDto);
 
-  @Mapping(target = "category", qualifiedByName = "getCategoryByName", source = "category")
+  @Mapping(source = "category", target = "category", qualifiedByName = "getCategoryByName")
   ProductMinimalDto toProductMinimalDto(Product product);
 
   @Mapping(target = "id", ignore = true)
@@ -53,6 +53,6 @@ public interface ProductMapper {
   @Mapping(
       target = "price",
       expression = "java(Money.of(productDto.priceAmount(), productDto.priceCurrency()))")
-  @Mapping(target = "imagesUrls", qualifiedByName = "addImagesUrls", source = "imagesUrls")
+  @Mapping(source = "imagesUrls", target = "imagesUrls", qualifiedByName = "addImagesUrls")
   void updateWithNull(ProductDto productDto, @MappingTarget Product product);
 }

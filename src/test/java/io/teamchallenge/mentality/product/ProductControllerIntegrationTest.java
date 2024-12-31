@@ -2,6 +2,7 @@ package io.teamchallenge.mentality.product;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 
@@ -17,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
@@ -38,7 +40,7 @@ class ProductControllerIntegrationTest {
 
   @Test
   void create_shouldCreateNewProduct() {
-    final int id = 4;
+    final int id = 5;
     final String expectedUrl = "http://localhost:%d/products/%d".formatted(port, id);
     ProductDto productDto =
         new ProductDto(
@@ -192,5 +194,41 @@ class ProductControllerIntegrationTest {
     assertEquals(notFound.name(), errorResponse.httpStatus());
     assertEquals("Product with id=%d not found".formatted(id), errorResponse.errorMessage());
     assertEquals("/products/%d".formatted(id), errorResponse.path());
+  }
+
+  @Test
+  void patch_shouldReturnProductDtoOfPartiallyUpdatedProduct() {
+    final int id = 4;
+    final String patchNode =
+        """
+        {
+          "name": "K444 Carpet Patched",
+          "description": "Changed Description",
+          "quantityInStock": 333
+        }""";
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(APPLICATION_JSON);
+
+    var resp =
+        restTemplate.exchange(
+            "/products/{id}",
+            HttpMethod.PATCH,
+            new HttpEntity<>(patchNode, headers),
+            ProductDto.class,
+            id);
+    ProductDto productDto = resp.getBody();
+
+    assertEquals(HttpStatus.OK, resp.getStatusCode());
+    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
+    assertNotNull(productDto);
+    assertEquals(id, productDto.id());
+    assertNotNull(productDto.sku());
+    assertEquals("K444 Carpet Patched", productDto.name());
+    assertEquals("Changed Description", productDto.description());
+    assertEquals(333, productDto.quantityInStock());
+    assertEquals(ProductCategory.CARPETS.name(), productDto.category());
+    assertEquals(0, BigDecimal.valueOf(33.33).compareTo(productDto.priceAmount()));
+    assertEquals("USD", productDto.priceCurrency());
+    assertTrue(productDto.imagesUrls().isEmpty());
   }
 }

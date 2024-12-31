@@ -5,7 +5,8 @@ INSERT INTO products (sku, name, description, price_amount, price_currency, quan
                       category)
 VALUES ('CAR-MAJ-1', 'Yoga Carpet Majestic K60', 'Product description', 406.56, 'USD', 100, 'CARPETS'),
        ('CAR-MAJ-2', 'Yoga Carpet Majestic K70', 'Product description', 26.56, 'USD', 10, 'CARPETS'),
-       ('CAR-MAJ-3', 'Yoga Carpet Majestic K110', 'Product description', 66.66, 'USD', 15, 'CARPETS');
+       ('CAR-MAJ-3', 'Yoga Carpet Majestic K110', 'Product description', 66.66, 'USD', 15, 'CARPETS'),
+       ('CAR-MAJ-4', 'Carpet K333', 'Description', 33.33, 'USD', 33, 'CARPETS');
 
 INSERT INTO product_images(index_id, image_url, product_sku)
 VALUES (0, 'https://io.ment.strg/products/car_majk60_1.png', 'CAR-MAJ-1'),

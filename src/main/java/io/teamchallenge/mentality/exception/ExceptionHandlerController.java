@@ -71,4 +71,12 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
         .body(new ApiErrorResponse(NOT_FOUND, e.getMessage(), req.getDescription(false)));
   }
+
+  @ExceptionHandler(JsonException.class)
+  public ResponseEntity<Object> handleJsonException(final JsonException e, final WebRequest req) {
+    return ResponseEntity.status(INTERNAL_SERVER_ERROR)
+        .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+        .body(
+            new ApiErrorResponse(INTERNAL_SERVER_ERROR, e.getMessage(), req.getDescription(false)));
+  }
 }

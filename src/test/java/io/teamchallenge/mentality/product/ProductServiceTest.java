@@ -8,14 +8,20 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import io.teamchallenge.mentality.exception.JsonException;
 import io.teamchallenge.mentality.exception.ProductNotFoundException;
 import io.teamchallenge.mentality.product.category.Category;
 import io.teamchallenge.mentality.product.category.CategoryRepository;
 import io.teamchallenge.mentality.product.category.ProductCategory;
 import io.teamchallenge.mentality.product.dto.ProductDto;
+import java.io.IOException;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,11 +34,15 @@ class ProductServiceTest {
 
   private static final Integer ID = 1;
 
+  private static final String PRODUCT_NOT_FOUND_MESSAGE = "Product with id=%d not found";
+
   @Mock private ProductRepository productRepository;
 
   @Mock private CategoryRepository categoryRepository;
 
   @Mock private ProductMapper productMapper;
+
+  @Mock private ObjectMapper objectMapper;
 
   @InjectMocks private ProductService productService;
 
@@ -52,7 +62,7 @@ class ProductServiceTest {
 
   @Test
   void deleteById_shouldThrowProductNotFoundException() {
-    String errorMessage = "Product with id=%d not found".formatted(ID);
+    String errorMessage = PRODUCT_NOT_FOUND_MESSAGE.formatted(ID);
     when(productRepository.existsById(ID)).thenReturn(false);
 
     var e = assertThrows(ProductNotFoundException.class, () -> productService.deleteById(ID));
@@ -64,7 +74,7 @@ class ProductServiceTest {
   }
 
   @Test
-  void update_shouldUpdateAndSaveProduct() {
+  void putUpdate_shouldPutUpdateAndSaveProduct() {
     final ProductDto productDto = mock(ProductDto.class);
     final Product product = mock(Product.class);
     final Category category = mock(Category.class);
@@ -76,7 +86,7 @@ class ProductServiceTest {
     when(productRepository.save(product)).thenReturn(product);
     when(productMapper.toProductDto(product)).thenReturn(productDto);
 
-    ProductDto actual = assertDoesNotThrow(() -> productService.update(ID, productDto));
+    ProductDto actual = assertDoesNotThrow(() -> productService.putUpdate(ID, productDto));
 
     assertEquals(productDto, actual);
     verify(productRepository).findById(ID);
@@ -87,13 +97,14 @@ class ProductServiceTest {
   }
 
   @Test
-  void update_shouldThrowProductNotFoundException() {
+  void putUpdate_shouldThrowProductNotFoundException() {
     final ProductDto productDto = mock(ProductDto.class);
-    String errorMessage = "Product with id=%d not found".formatted(ID);
+    String errorMessage = PRODUCT_NOT_FOUND_MESSAGE.formatted(ID);
     when(productRepository.findById(ID)).thenThrow(new ProductNotFoundException(ID));
 
     var e =
-        assertThrows(ProductNotFoundException.class, () -> productService.update(ID, productDto));
+        assertThrows(
+            ProductNotFoundException.class, () -> productService.putUpdate(ID, productDto));
 
     assertEquals(errorMessage, e.getMessage());
     verify(productRepository).findById(ID);
@@ -101,5 +112,71 @@ class ProductServiceTest {
     verify(categoryRepository, never()).getReferenceById(ID);
     verify(productRepository, never()).save(any(Product.class));
     verify(productMapper, never()).toProductDto(any(Product.class));
+  }
+
+  @Test
+  void patchUpdate_shouldPartiallyUpdateAndSaveProduct() throws IOException {
+    final JsonNode jsonNode = mock(JsonNode.class);
+    final Product product = mock(Product.class);
+    final ProductDto productDto = mock(ProductDto.class);
+    final ObjectReader objectReader = mock(ObjectReader.class);
+    when(productRepository.findById(ID)).thenReturn(Optional.of(product));
+    when(productMapper.toProductDto(product)).thenReturn(productDto);
+    when(objectMapper.readerForUpdating(productDto)).thenReturn(objectReader);
+    when(objectReader.readValue(jsonNode)).thenReturn(productDto);
+    doNothing().when(productMapper).updateWithNull(productDto, product);
+    when(productRepository.save(product)).thenReturn(product);
+
+    assertDoesNotThrow(() -> productService.patchUpdate(ID, jsonNode));
+
+    verify(productRepository).findById(ID);
+    verify(productMapper, times(2)).toProductDto(product);
+    verify(objectMapper).readerForUpdating(productDto);
+    verify(objectReader).readValue(jsonNode);
+    verify(productMapper).updateWithNull(productDto, product);
+    verify(productRepository).save(product);
+  }
+
+  @Test
+  void patchUpdate_shouldThrowProductNotFoundException() {
+    final JsonNode jsonNode = mock(JsonNode.class);
+    String errorMessage = PRODUCT_NOT_FOUND_MESSAGE.formatted(ID);
+    when(productRepository.findById(ID)).thenThrow(new ProductNotFoundException(ID));
+
+    var e =
+        assertThrows(
+            ProductNotFoundException.class, () -> productService.patchUpdate(ID, jsonNode));
+
+    assertEquals(errorMessage, e.getMessage());
+    verify(productRepository).findById(ID);
+    verify(productMapper, never()).toProductDto(any(Product.class));
+    verify(objectMapper, never()).readerForUpdating(any(ProductDto.class));
+    verify(productMapper, never()).updateWithNull(any(ProductDto.class), any(Product.class));
+    verify(productRepository, never()).save(any(Product.class));
+  }
+
+  @Test
+  void patchUpdate_shouldThrowIOExceptionWhenReadingJsonNode() throws IOException {
+    final String errorMessage =
+        "Failed to convert JSON node to `%s` with id=`%d`"
+            .formatted(ProductDto.class.getSimpleName(), ID);
+    final JsonNode jsonNode = mock(JsonNode.class);
+    final Product product = mock(Product.class);
+    final ProductDto productDto = mock(ProductDto.class);
+    final ObjectReader objectReader = mock(ObjectReader.class);
+    when(productRepository.findById(ID)).thenReturn(Optional.of(product));
+    when(productMapper.toProductDto(product)).thenReturn(productDto);
+    when(objectMapper.readerForUpdating(productDto)).thenReturn(objectReader);
+    when(objectReader.readValue(jsonNode)).thenThrow(IOException.class);
+
+    var e = assertThrows(JsonException.class, () -> productService.patchUpdate(ID, jsonNode));
+
+    assertEquals(errorMessage, e.getMessage());
+    verify(productRepository).findById(ID);
+    verify(productMapper, times(1)).toProductDto(product);
+    verify(objectMapper).readerForUpdating(productDto);
+    verify(objectReader).readValue(jsonNode);
+    verify(productMapper, never()).updateWithNull(productDto, product);
+    verify(productRepository, never()).save(product);
   }
 }

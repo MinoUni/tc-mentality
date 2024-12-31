@@ -1,0 +1,11 @@
+logging:
+  level:
+    net.ttddyy.dsproxy.listener: debug
+    root: info
+    web: info
+spring:
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true

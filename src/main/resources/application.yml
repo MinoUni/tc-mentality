@@ -18,6 +18,10 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: default
   jpa:
     hibernate:
       ddl-auto: validate

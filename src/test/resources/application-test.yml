@@ -8,7 +8,7 @@ spring:
     name: test
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/mentality_test}
+    url: jdbc:postgresql://localhost:5432/mentality_test
     username: ${DB_USERNAME:admin}
     password: ${DB_PASSWORD:pass}
   liquibase:

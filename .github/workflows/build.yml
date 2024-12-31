@@ -10,9 +10,6 @@ jobs:
     name: Build and Analyze
     runs-on: [ ubuntu-latest ]
     env:
-      DB_URL: 'jdbc:postgresql://localhost:5432/mentality_test'
-      DB_USERNAME: admin
-      DB_PASSWORD: pass
       GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
     services:
       postgres:

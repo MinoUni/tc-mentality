@@ -14,7 +14,6 @@ RUN java -Djarmode=tools -jar mentality.jar extract --layers --launcher
 # Stage №3 - Copy extracted layers
 FROM maven:3.9.9-amazoncorretto-21-alpine
 USER spring-app:minouni
-WORKDIR /app
 COPY --from=builder app/dependencies/ ./
 COPY --from=builder app/snapshot-dependencies/ ./
 COPY --from=builder app/spring-boot-loader/ ./

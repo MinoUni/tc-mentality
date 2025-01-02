@@ -15,8 +15,8 @@ RUN java -Djarmode=tools -jar mentality.jar extract --layers --launcher
 FROM maven:3.9.9-amazoncorretto-21-alpine
 USER spring-app:minouni
 WORKDIR /app
-COPY --from=builder dependencies/ ./
-COPY --from=builder snapshot-dependencies/ ./
-COPY --from=builder spring-boot-loader/ ./
-COPY --from=builder application/ ./
+COPY --from=builder app/dependencies/ ./
+COPY --from=builder app/snapshot-dependencies/ ./
+COPY --from=builder app/spring-boot-loader/ ./
+COPY --from=builder app/application/ ./
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]

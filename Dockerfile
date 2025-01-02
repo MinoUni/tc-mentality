@@ -8,7 +8,7 @@ FROM maven:3.9.9-amazoncorretto-21-alpine AS builder
 WORKDIR /builder
 ARG JAR_FILE=target/*.jar
 COPY --from=build ${JAR_FILE} mentality.jar
-RUN java -Djarmode=tools -jar mentality.jar extract --layers --launcher --destination extracted
+RUN java -Djarmode=tools -jar mentality.jar extract --layers --destination extracted
 
 # Stage №3 - Copy extracted layers
 FROM maven:3.9.9-amazoncorretto-21-alpine

@@ -12,10 +12,10 @@ RUN java -Djarmode=tools -jar mentality.jar extract --layers --launcher --destin
 
 # Stage №3 - Copy extracted layers
 FROM maven:3.9.9-amazoncorretto-21-alpine
-WORKDIR /application
+WORKDIR /app
 USER spring-app:minouni
 COPY --from=builder /builder/extracted/dependencies/ ./
 COPY --from=builder /builder/extracted/spring-boot-loader/ ./
 COPY --from=builder /builder/extracted/snapshot-dependencies/ ./
 COPY --from=builder /builder/extracted/application/ ./
-ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["java", "-jar", "mentality.jar"]

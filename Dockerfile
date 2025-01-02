@@ -9,7 +9,7 @@ FROM maven:3.9.9-amazoncorretto-21-debian AS builder
 WORKDIR /app
 ARG JAR_FILE=target/*.jar
 COPY --from=build /app/${JAR_FILE} /app/mentality.jar
-RUN java -Djarmode=layertools -jar mentality.jar extract
+RUN java -Djarmode=tools -jar mentality.jar extract --layers --launcher
 
 # Stage №3 - Copy extracted layers
 FROM maven:3.9.9-amazoncorretto-21-debian

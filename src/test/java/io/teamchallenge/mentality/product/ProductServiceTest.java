@@ -21,13 +21,21 @@ import io.teamchallenge.mentality.product.category.Category;
 import io.teamchallenge.mentality.product.category.CategoryRepository;
 import io.teamchallenge.mentality.product.category.ProductCategory;
 import io.teamchallenge.mentality.product.dto.ProductDto;
+import io.teamchallenge.mentality.product.dto.ProductFilter;
+import io.teamchallenge.mentality.product.dto.ProductMinimalDto;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -45,6 +53,51 @@ class ProductServiceTest {
   @Mock private ObjectMapper objectMapper;
 
   @InjectMocks private ProductService productService;
+
+  @Test
+  void getById_shouldFindProductByIdAndMapToProductDto() {
+    final Product product = mock(Product.class);
+    final ProductDto productDto = mock(ProductDto.class);
+    when(productRepository.findById(ID)).thenReturn(Optional.of(product));
+    when(productMapper.toProductDto(product)).thenReturn(productDto);
+
+    assertDoesNotThrow(() -> productService.getById(ID));
+
+    verify(productRepository).findById(ID);
+    verify(productMapper).toProductDto(product);
+  }
+
+  @Test
+  void getById_shouldThrowProductNotFoundException() {
+    final String errorMessage = PRODUCT_NOT_FOUND_MESSAGE.formatted(ID);
+    when(productRepository.findById(ID)).thenThrow(new ProductNotFoundException(ID));
+
+    var e = assertThrows(ProductNotFoundException.class, () -> productService.getById(ID));
+
+    assertEquals(e.getMessage(), errorMessage);
+    verify(productRepository).findById(ID);
+    verify(productMapper, never()).toProductDto(any(Product.class));
+  }
+
+  @Test
+  void getAll_shouldFindProductsAndMapToPage() {
+    final ProductFilter filter = mock(ProductFilter.class);
+    final Pageable pageable = mock(PageRequest.class);
+    final Product product = mock(Product.class);
+    final ProductMinimalDto productDto = mock(ProductMinimalDto.class);
+    final Specification<Product> specification = Specification.where(null);
+    final Page<Product> products = new PageImpl<>(List.of(product));
+
+    when(filter.toSpecification()).thenReturn(specification);
+    when(productRepository.findAll(specification, pageable)).thenReturn(products);
+    when(productMapper.toProductMinimalDto(product)).thenReturn(productDto);
+
+    assertDoesNotThrow(() -> productService.getAll(filter, pageable));
+
+    verify(filter).toSpecification();
+    verify(productRepository).findAll(specification, pageable);
+    verify(productMapper).toProductMinimalDto(product);
+  }
 
   @Test
   void deleteById_shouldDeleteProduct() {

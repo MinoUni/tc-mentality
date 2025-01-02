@@ -5,14 +5,17 @@ RUN mvn clean package -DskipTests
 
 # Stage №2 - Extract layers
 FROM maven:3.9.9-amazoncorretto-21-alpine AS builder
-COPY --from=build /target/*.jar mentality.jar
-RUN java -Djarmode=tools -jar mentality.jar extract --layers --launcher
+WORKDIR /builder
+ARG JAR_FILE=target/*.jar
+COPY --from=build ${JAR_FILE} mentality.jar
+RUN java -Djarmode=tools -jar mentality.jar extract --layers --launcher --destination extracted
 
 # Stage №3 - Copy extracted layers
 FROM maven:3.9.9-amazoncorretto-21-alpine
+WORKDIR /application
 USER spring-app:minouni
-COPY --from=builder dependencies/ ./
-COPY --from=builder snapshot-dependencies/ ./
-COPY --from=builder spring-boot-loader/ ./
-COPY --from=builder application/ ./
+COPY --from=builder /builder/extracted/dependencies/ ./
+COPY --from=builder /builder/extracted/spring-boot-loader/ ./
+COPY --from=builder /builder/extracted/snapshot-dependencies/ ./
+COPY --from=builder /builder/extracted/application/ ./
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]

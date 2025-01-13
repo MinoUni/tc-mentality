@@ -4,10 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.time.LocalDateTime;
-
+import io.teamchallenge.mentality.customer.dto.CustomerDto;
 import io.teamchallenge.mentality.customer.dto.CustomerPatchDto;
-import io.teamchallenge.mentality.customer.dto.CustomerUpdateDto;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
@@ -35,35 +34,32 @@ class CustomerMapperTest {
   @Test
   void shouldMapCustomerUpdateDtoIntoCustomer() {
     var customer = getCustomer();
-    var customerUpdateDto =
-        new CustomerUpdateDto(
+    var customerDto =
+        new CustomerDto(
+            1,
             "Doe",
             "John",
+            "Doe",
             "0987-654-321",
             "321 Helm Street, Texas",
-            "doe.png");
+            "doe.png",
+            LocalDateTime.now());
 
-    mapper.updateCustomer(customerUpdateDto, customer);
+    mapper.updateWithNull(customerDto, customer);
 
     assertNotNull(customer);
     assertEquals(1, customer.getId());
-    assertEquals(customerUpdateDto.firstName(), customer.getFirstName());
-    assertEquals(customerUpdateDto.lastName(), customer.getLastName());
-    assertEquals(customerUpdateDto.address(), customer.getAddress());
-    assertEquals(customerUpdateDto.phone(), customer.getPhone());
-    assertEquals(customerUpdateDto.profilePicture(), customer.getProfilePicture());
+    assertEquals(customerDto.firstName(), customer.getFirstName());
+    assertEquals(customerDto.lastName(), customer.getLastName());
+    assertEquals(customerDto.address(), customer.getAddress());
+    assertEquals(customerDto.phone(), customer.getPhone());
+    assertEquals(customerDto.profilePicture(), customer.getProfilePicture());
   }
 
   @Test
   void shouldMapCustomerPatchDtoIntoCustomer() {
     var customer = getCustomer();
-    var customerPatchDto =
-        new CustomerPatchDto(
-            null,
-            null,
-            "0987-654-321",
-            null,
-            "doe.png");
+    var customerPatchDto = new CustomerPatchDto(null, null, "0987-654-321", null, "doe.png");
 
     mapper.patchUpdateCustomer(customerPatchDto, customer);
 

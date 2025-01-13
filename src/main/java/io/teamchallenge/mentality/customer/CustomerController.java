@@ -63,8 +63,8 @@ class CustomerController {
             })
       })
   @GetMapping("/{id}")
-  public ResponseEntity<CustomerDto> getCustomerById(@PathVariable Integer id) {
-    return ResponseEntity.ok(customerService.getCustomerById(id));
+  public ResponseEntity<CustomerDto> getOneById(@PathVariable Integer id) {
+    return ResponseEntity.ok(customerService.getById(id));
   }
 
   @Operation(

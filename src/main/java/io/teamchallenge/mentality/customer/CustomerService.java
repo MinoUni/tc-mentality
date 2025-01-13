@@ -4,34 +4,29 @@ import io.teamchallenge.mentality.customer.dto.CustomerDto;
 import io.teamchallenge.mentality.customer.dto.CustomerPatchDto;
 import io.teamchallenge.mentality.customer.dto.CustomerUpdateDto;
 import io.teamchallenge.mentality.exception.CustomerNotFoundException;
+import io.teamchallenge.mentality.utils.CustomerConstant;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CustomerService {
 
   private final CustomerRepository repository;
   private final CustomerMapper mapper;
 
-  public CustomerService(
-      CustomerRepository repository, @Qualifier("customerMapperImpl") CustomerMapper mapper) {
-    this.repository = repository;
-    this.mapper = mapper;
-  }
-
-  public CustomerDto getCustomerById(Integer id) {
-    var customer = repository.findById(id).orElseThrow(() -> new CustomerNotFoundException(id));
-    return mapper.toCustomerDto(customer);
+  public CustomerDto getById(Integer id) {
+    return mapper.toCustomerDto(getCustomer(id));
   }
 
   @Transactional
   public void deleteCustomerById(Integer id) {
     if (!repository.existsById(id)) {
-      log.info("Customer with id={} not found", id);
+      log.info(CustomerConstant.CUSTOMER_WITH_ID_NOT_FOUND, id);
       throw new CustomerNotFoundException(id);
     }
     var customer = repository.getReferenceById(id);
@@ -52,5 +47,15 @@ public class CustomerService {
     mapper.patchUpdateCustomer(customerPatchDto, customer);
     repository.save(customer);
     return mapper.toCustomerDto(customer);
+  }
+
+  private Customer getCustomer(final Integer id) {
+    return repository
+        .findById(id)
+        .orElseThrow(
+            () -> {
+              log.info(CustomerConstant.CUSTOMER_WITH_ID_NOT_FOUND, id);
+              return new CustomerNotFoundException(id);
+            });
   }
 }

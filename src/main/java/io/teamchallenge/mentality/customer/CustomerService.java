@@ -24,13 +24,14 @@ public class CustomerService {
   }
 
   @Transactional
-  public void deleteCustomerById(Integer id) {
+  public void deleteById(Integer id) {
     if (!repository.existsById(id)) {
       log.info(CustomerConstant.CUSTOMER_WITH_ID_NOT_FOUND, id);
       throw new CustomerNotFoundException(id);
     }
     var customer = repository.getReferenceById(id);
     repository.delete(customer);
+    log.info(CustomerConstant.CUSTOMER_WITH_ID_DELETED, id);
   }
 
   @Transactional

@@ -92,8 +92,8 @@ class CustomerController {
             })
       })
   @DeleteMapping("/{id}")
-  public ResponseEntity<String> deleteCustomerById(@PathVariable Integer id) {
-    customerService.deleteCustomerById(id);
+  public ResponseEntity<String> delete(@PathVariable Integer id) {
+    customerService.deleteById(id);
     return ResponseEntity.noContent().build();
   }
 

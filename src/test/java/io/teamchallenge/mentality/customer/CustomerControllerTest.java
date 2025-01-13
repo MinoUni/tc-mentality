@@ -1,9 +1,12 @@
 package io.teamchallenge.mentality.customer;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -77,5 +80,33 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.errorDetails").doesNotExist());
 
     verify(customerService).getById(ID);
+  }
+
+  @Test
+  void delete_shouldReturnNoContent() throws Exception {
+    doNothing().when(customerService).deleteById(ID);
+
+    mockMvc.perform(delete("/customers/{id}", ID)).andExpect(status().isNoContent());
+
+    verify(customerService).deleteById(ID);
+  }
+
+  @Test
+  void delete_shouldNotFound() throws Exception {
+    final HttpStatus httpStatus = HttpStatus.NOT_FOUND;
+    doThrow(new CustomerNotFoundException(ID)).when(customerService).deleteById(ID);
+
+    mockMvc
+        .perform(delete("/customers/{id}", ID))
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentType(APPLICATION_PROBLEM_JSON))
+        .andExpect(jsonPath("$.timestamp").exists())
+        .andExpect(jsonPath("$.httpStatus").value(httpStatus.name()))
+        .andExpect(jsonPath("$.httpStatusCode").value(httpStatus.value()))
+        .andExpect(jsonPath("$.errorMessage").value("Customer with id=%d not found.".formatted(ID)))
+        .andExpect(jsonPath("$.path").value("/customers/%d".formatted(ID)))
+        .andExpect(jsonPath("$.errorDetails").doesNotExist());
+
+    verify(customerService).deleteById(ID);
   }
 }

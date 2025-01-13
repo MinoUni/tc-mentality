@@ -82,7 +82,7 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.timestamp").exists())
         .andExpect(jsonPath("$.httpStatus").value(httpStatus.name()))
         .andExpect(jsonPath("$.httpStatusCode").value(httpStatus.value()))
-        .andExpect(jsonPath("$.errorMessage").value("Customer with id=%d not found.".formatted(ID)))
+        .andExpect(jsonPath("$.errorMessage").value("Customer with id=%d not found".formatted(ID)))
         .andExpect(jsonPath("$.path").value("/customers/%d".formatted(ID)))
         .andExpect(jsonPath("$.errorDetails").doesNotExist());
 
@@ -110,7 +110,7 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.timestamp").exists())
         .andExpect(jsonPath("$.httpStatus").value(httpStatus.name()))
         .andExpect(jsonPath("$.httpStatusCode").value(httpStatus.value()))
-        .andExpect(jsonPath("$.errorMessage").value("Customer with id=%d not found.".formatted(ID)))
+        .andExpect(jsonPath("$.errorMessage").value("Customer with id=%d not found".formatted(ID)))
         .andExpect(jsonPath("$.path").value("/customers/%d".formatted(ID)))
         .andExpect(jsonPath("$.errorDetails").doesNotExist());
 
@@ -182,7 +182,7 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.timestamp").exists())
         .andExpect(jsonPath("$.httpStatus").value(httpStatus.name()))
         .andExpect(jsonPath("$.httpStatusCode").value(httpStatus.value()))
-        .andExpect(jsonPath("$.errorMessage").value("Customer with id=%d not found.".formatted(ID)))
+        .andExpect(jsonPath("$.errorMessage").value("Customer with id=%d not found".formatted(ID)))
         .andExpect(jsonPath("$.path").value("/customers/%d".formatted(ID)))
         .andExpect(jsonPath("$.errorDetails").doesNotExist());
 
@@ -309,7 +309,7 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.timestamp").exists())
         .andExpect(jsonPath("$.httpStatus").value(httpStatus.name()))
         .andExpect(jsonPath("$.httpStatusCode").value(httpStatus.value()))
-        .andExpect(jsonPath("$.errorMessage").value("Customer with id=%d not found.".formatted(ID)))
+        .andExpect(jsonPath("$.errorMessage").value("Customer with id=%d not found".formatted(ID)))
         .andExpect(jsonPath("$.path").value("/customers/%d".formatted(ID)))
         .andExpect(jsonPath("$.errorDetails").doesNotExist());
 

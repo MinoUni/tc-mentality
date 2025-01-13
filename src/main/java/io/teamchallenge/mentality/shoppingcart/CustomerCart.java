@@ -1,6 +1,7 @@
-package io.teamchallenge.mentality.customer;
+package io.teamchallenge.mentality.shoppingcart;
 
 import io.hypersistence.utils.hibernate.type.money.MonetaryAmountType;
+import io.teamchallenge.mentality.customer.Customer;
 import io.teamchallenge.mentality.product.Product;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;

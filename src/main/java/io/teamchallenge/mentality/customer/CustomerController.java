@@ -4,13 +4,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.teamchallenge.mentality.customer.dto.CustomerDto;
-import io.teamchallenge.mentality.customer.dto.CustomerPatchDto;
 import io.teamchallenge.mentality.exception.dto.ApiErrorResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -163,7 +163,9 @@ class CustomerController {
       })
   @PatchMapping("/{id}")
   public ResponseEntity<CustomerDto> patch(
-      @PathVariable Integer id, @RequestBody CustomerPatchDto customer) {
-    return ResponseEntity.ok(customerService.patchUpdateCustomer(id, customer));
+      @PathVariable Integer id, @RequestBody JsonNode patchNode) {
+    return ResponseEntity.status(HttpStatus.OK)
+        .contentType(APPLICATION_JSON)
+        .body(customerService.updatePatch(id, patchNode));
   }
 }

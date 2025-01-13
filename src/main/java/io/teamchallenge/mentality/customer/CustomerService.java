@@ -2,7 +2,6 @@ package io.teamchallenge.mentality.customer;
 
 import io.teamchallenge.mentality.customer.dto.CustomerDto;
 import io.teamchallenge.mentality.customer.dto.CustomerPatchDto;
-import io.teamchallenge.mentality.customer.dto.CustomerUpdateDto;
 import io.teamchallenge.mentality.exception.CustomerNotFoundException;
 import io.teamchallenge.mentality.utils.CustomerConstant;
 import lombok.RequiredArgsConstructor;
@@ -35,10 +34,10 @@ public class CustomerService {
   }
 
   @Transactional
-  public CustomerDto updateCustomer(Integer id, CustomerUpdateDto customerUpdateDto) {
-    var customer = repository.findById(id).orElseThrow(() -> new CustomerNotFoundException(id));
-    mapper.updateCustomer(customerUpdateDto, customer);
-    repository.save(customer);
+  public CustomerDto updatePut(Integer id, CustomerDto customerUpdateDto) {
+    var customer = getCustomer(id);
+    mapper.updateWithNull(customerUpdateDto, customer);
+    customer = repository.save(customer);
     return mapper.toCustomerDto(customer);
   }
 

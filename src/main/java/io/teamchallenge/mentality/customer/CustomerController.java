@@ -1,5 +1,6 @@
 package io.teamchallenge.mentality.customer;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON_VALUE;
 
@@ -10,11 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.teamchallenge.mentality.customer.dto.CustomerDto;
 import io.teamchallenge.mentality.customer.dto.CustomerPatchDto;
-import io.teamchallenge.mentality.customer.dto.CustomerUpdateDto;
 import io.teamchallenge.mentality.exception.dto.ApiErrorResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -125,10 +126,11 @@ class CustomerController {
                   schema = @Schema(implementation = ApiErrorResponse.class))
             })
       })
-  @PutMapping("/{id}")
-  public ResponseEntity<CustomerDto> updateCustomerById(
-      @PathVariable Integer id, @Valid @RequestBody CustomerUpdateDto customer) {
-    return ResponseEntity.ok(customerService.updateCustomer(id, customer));
+  @PutMapping(value = "/{id}")
+  public ResponseEntity<CustomerDto> update(
+      @PathVariable Integer id, @Valid @RequestBody CustomerDto customer) {
+    CustomerDto customerDto = customerService.updatePut(id, customer);
+    return ResponseEntity.status(HttpStatus.OK).contentType(APPLICATION_JSON).body(customerDto);
   }
 
   @Operation(

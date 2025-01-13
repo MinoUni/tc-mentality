@@ -1,4 +1,4 @@
-package io.teamchallenge.mentality.customer;
+package io.teamchallenge.mentality.shoppingcart;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

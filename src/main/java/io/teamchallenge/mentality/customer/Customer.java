@@ -1,6 +1,7 @@
 package io.teamchallenge.mentality.customer;
 
 import io.teamchallenge.mentality.order.Order;
+import io.teamchallenge.mentality.shoppingcart.CustomerCart;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

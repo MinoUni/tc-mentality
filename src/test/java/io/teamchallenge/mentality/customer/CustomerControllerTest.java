@@ -11,13 +11,16 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.teamchallenge.mentality.customer.dto.CustomerDto;
 import io.teamchallenge.mentality.exception.CustomerNotFoundException;
+import io.teamchallenge.mentality.exception.JsonException;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -213,5 +216,103 @@ class CustomerControllerTest {
         .andExpect(jsonPath("$.errorDetails.length()").value(1));
 
     verify(customerService, never()).updatePut(eq(ID), any(CustomerDto.class));
+  }
+
+  @Test
+  void patch_shouldPartiallyUpdate() throws Exception {
+    final String patchNode =
+        """
+          {
+            "email": "john.doe@gmail.com",
+            "firstName": "John",
+            "lastName": "Doe"
+          }
+        """;
+    final CustomerDto customerDto =
+        new CustomerDto(
+            ID,
+            "john.doe@gmail.com",
+            "John",
+            "Doe",
+            "380445556677",
+            "Mtis City, Sn Pat street 88",
+            "jdavatar.png",
+            LocalDateTime.now());
+    when(customerService.updatePatch(eq(ID), any(JsonNode.class))).thenReturn(customerDto);
+
+    mockMvc
+        .perform(patch("/customers/{id}", ID).contentType(APPLICATION_JSON).content(patchNode))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(customerDto.id()))
+        .andExpect(jsonPath("$.email").value(customerDto.email()))
+        .andExpect(jsonPath("$.firstName").value(customerDto.firstName()))
+        .andExpect(jsonPath("$.lastName").value(customerDto.lastName()))
+        .andExpect(jsonPath("$.phone").value(customerDto.phone()))
+        .andExpect(jsonPath("$.address").value(customerDto.address()))
+        .andExpect(jsonPath("$.profilePicture").value(customerDto.profilePicture()))
+        .andExpect(jsonPath("$.createdAt").exists());
+
+    verify(customerService).updatePatch(eq(ID), any(JsonNode.class));
+  }
+
+  @Test
+  void patch_shouldFailToReadJsonNode() throws Exception {
+    final HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+    final String patchNode =
+        """
+          {
+            "email": "john.doe@gmail.com",
+            "firstName": "John",
+            "profilePicture": "jdavatar.png"
+          }
+        """;
+    when(customerService.updatePatch(eq(ID), any(JsonNode.class)))
+        .thenThrow(new JsonException(CustomerDto.class, ID));
+
+    mockMvc
+        .perform(patch("/customers/{id}", ID).content(patchNode).contentType(APPLICATION_JSON))
+        .andExpect(status().isInternalServerError())
+        .andExpect(content().contentType(APPLICATION_PROBLEM_JSON))
+        .andExpect(jsonPath("$.timestamp").exists())
+        .andExpect(jsonPath("$.httpStatus").value(httpStatus.name()))
+        .andExpect(jsonPath("$.httpStatusCode").value(httpStatus.value()))
+        .andExpect(
+            jsonPath("$.errorMessage")
+                .value(
+                    "Failed to convert JSON node to `%s` with id=`%d`"
+                        .formatted(CustomerDto.class.getSimpleName(), ID)))
+        .andExpect(jsonPath("$.path").value("/customers/%d".formatted(ID)))
+        .andExpect(jsonPath("$.errorDetails").doesNotExist());
+
+    verify(customerService).updatePatch(eq(ID), any(JsonNode.class));
+  }
+
+  @Test
+  void patch_shouldNotFound() throws Exception {
+    final HttpStatus httpStatus = HttpStatus.NOT_FOUND;
+    final String patchNode =
+        """
+          {
+            "email": "john.doe@gmail.com",
+            "firstName": "John",
+            "profilePicture": "jdavatar.png"
+          }
+        """;
+    when(customerService.updatePatch(eq(ID), any(JsonNode.class)))
+        .thenThrow(new CustomerNotFoundException(ID));
+
+    mockMvc
+        .perform(patch("/customers/{id}", ID).content(patchNode).contentType(APPLICATION_JSON))
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentType(APPLICATION_PROBLEM_JSON))
+        .andExpect(jsonPath("$.timestamp").exists())
+        .andExpect(jsonPath("$.httpStatus").value(httpStatus.name()))
+        .andExpect(jsonPath("$.httpStatusCode").value(httpStatus.value()))
+        .andExpect(jsonPath("$.errorMessage").value("Customer with id=%d not found.".formatted(ID)))
+        .andExpect(jsonPath("$.path").value("/customers/%d".formatted(ID)))
+        .andExpect(jsonPath("$.errorDetails").doesNotExist());
+
+    verify(customerService).updatePatch(eq(ID), any(JsonNode.class));
   }
 }

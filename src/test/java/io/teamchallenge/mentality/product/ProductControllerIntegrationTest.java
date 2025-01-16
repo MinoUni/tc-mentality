@@ -1,28 +1,37 @@
 package io.teamchallenge.mentality.product;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_PROBLEM_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.teamchallenge.mentality.exception.dto.ApiErrorResponse;
 import io.teamchallenge.mentality.product.category.ProductCategory;
 import io.teamchallenge.mentality.product.dto.ProductDto;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 @ActiveProfiles("test")
 @Sql(
@@ -32,35 +41,45 @@ import org.springframework.test.context.jdbc.Sql;
     scripts = "classpath:/product/delete-products.sql",
     executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
 class ProductControllerIntegrationTest {
 
-  @LocalServerPort private Integer port;
+  @Autowired private WebApplicationContext context;
 
-  @Autowired private TestRestTemplate restTemplate;
+  private MockMvc mockMvc;
 
-  @Test
-  void create_shouldCreateNewProduct() {
-    final int id = 5;
-    final String expectedUrl = "http://localhost:%d/products/%d".formatted(port, id);
-    ProductDto productDto =
-        new ProductDto(
-            null,
-            null,
-            "Black Carpet",
-            "Description",
-            100,
-            ProductCategory.CARPETS.name(),
-            BigDecimal.valueOf(425.25),
-            "USD",
-            List.of("/image_1.jpg", "/image_2.jpg"));
-
-    String productUrl = restTemplate.postForLocation("/products", productDto).toString();
-
-    assertEquals(expectedUrl, productUrl);
+  @BeforeEach
+  void setup() {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
   }
 
   @Test
-  void getOneById_shouldFindProductById() {
+  @WithAnonymousUser
+  void create_shouldCreateNewProduct() throws Exception {
+    final String productJson =
+        """
+          {
+            "name": "Black Carpet",
+            "description": "Very nice carpet",
+            "quantityInStock": 100,
+            "category": "CARPETS",
+            "priceAmount": 425.25,
+            "priceCurrency": "USD",
+            "imagesUrls": [
+              "/image_1.jpg",
+              "/image_2.jpg"
+            ]
+          }
+        """;
+    mockMvc
+        .perform(post("/products").contentType(APPLICATION_JSON).content(productJson))
+        .andExpect(status().isCreated())
+        .andExpect(header().exists(HttpHeaders.LOCATION));
+  }
+
+  @Test
+  @WithAnonymousUser
+  void getOneById_shouldFindProductById() throws Exception {
     final int id = 1;
     ProductDto expected =
         new ProductDto(
@@ -77,158 +96,210 @@ class ProductControllerIntegrationTest {
                 "https://io.ment.strg/products/car_majk60_2.png",
                 "https://io.ment.strg/products/car_majk60_3.png"));
 
-    var resp = restTemplate.getForEntity("/products/{id}", ProductDto.class, id);
-
-    assertEquals(HttpStatus.OK, resp.getStatusCode());
-    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
-
-    ProductDto productDto = resp.getBody();
-
-    assertNotNull(productDto);
-    assertEquals(id, productDto.id());
-    assertNotNull(productDto.sku());
-    assertEquals(expected.name(), productDto.name());
-    assertEquals(expected.description(), productDto.description());
-    assertEquals(expected.quantityInStock(), productDto.quantityInStock());
-    assertEquals(expected.category(), productDto.category());
-    assertEquals(0, expected.priceAmount().compareTo(productDto.priceAmount()));
-    assertEquals(expected.priceCurrency(), productDto.priceCurrency());
-    assertEquals(expected.imagesUrls(), productDto.imagesUrls());
+    mockMvc
+        .perform(get("/products/{id}", id))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(APPLICATION_JSON))
+        .andExpect(jsonPath("$.id").value(expected.id()))
+        .andExpect(jsonPath("$.sku").exists())
+        .andExpect(jsonPath("$.name").value(expected.name()))
+        .andExpect(jsonPath("$.description").value(expected.description()))
+        .andExpect(jsonPath("$.quantityInStock").value(expected.quantityInStock()))
+        .andExpect(jsonPath("$.category").value(expected.category()))
+        .andExpect(jsonPath("$.priceAmount").value(expected.priceAmount()))
+        .andExpect(jsonPath("$.priceCurrency").value(expected.priceCurrency()))
+        .andExpect(jsonPath("$.imagesUrls", hasSize(expected.imagesUrls().size())));
   }
 
   @Test
-  void delete_shouldDeleteAndReturnNoContentResponse() {
+  @WithMockUser
+  void delete_shouldDeleteAndReturnNoContent() throws Exception {
     final int id = 2;
-
-    var resp = restTemplate.exchange("/products/{id}", HttpMethod.DELETE, null, String.class, id);
-
-    assertEquals(HttpStatus.NO_CONTENT, resp.getStatusCode());
+    mockMvc.perform(delete("/products/{id}", id)).andExpect(status().isNoContent());
   }
 
   @Test
-  void delete_shouldReturnNotFoundResponse() {
-    HttpStatus notFound = HttpStatus.NOT_FOUND;
+  @WithAnonymousUser
+  void delete_shouldReturnUnauthorized() throws Exception {
+    final int id = 2;
+    mockMvc.perform(delete("/products/{id}", id)).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @WithMockUser
+  void delete_shouldReturnNotFound() throws Exception {
+    final HttpStatus httpStatus = HttpStatus.NOT_FOUND;
     final int id = 15;
 
-    var resp =
-        restTemplate.exchange(
-            "/products/{id}", HttpMethod.DELETE, null, ApiErrorResponse.class, id);
-    ApiErrorResponse errorResp = resp.getBody();
-
-    assertEquals(notFound, resp.getStatusCode());
-    assertEquals(APPLICATION_PROBLEM_JSON, resp.getHeaders().getContentType());
-    assertNotNull(errorResp);
-    assertEquals(notFound.value(), errorResp.httpStatusCode());
-    assertEquals(notFound.name(), errorResp.httpStatus());
-    assertEquals("Product with id=%d not found".formatted(id), errorResp.errorMessage());
-    assertEquals("/products/%d".formatted(id), errorResp.path());
+    mockMvc
+        .perform(delete("/products/{id}", id))
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentType(APPLICATION_PROBLEM_JSON))
+        .andExpect(jsonPath("timestamp").exists())
+        .andExpect(jsonPath("httpStatus").value(httpStatus.name()))
+        .andExpect(jsonPath("httpStatusCode").value(httpStatus.value()))
+        .andExpect(jsonPath("errorMessage").value("Product with id=%d not found".formatted(id)))
+        .andExpect(jsonPath("path").value("/products/%d".formatted(id)))
+        .andExpect(jsonPath("errorDetails").doesNotExist());
   }
 
   @Test
-  void update_shouldReturnUpdateProductDto() {
+  @WithMockUser
+  void update_shouldUpdateAndReturnProductDto() throws Exception {
     final int id = 3;
-    ProductDto productDtoReq =
-        new ProductDto(
-            15,
-            UUID.randomUUID().toString(),
-            "Yoga Carpet Majestic K160",
-            "Product description",
-            16,
-            ProductCategory.CARPETS.name(),
-            BigDecimal.valueOf(16.16),
-            "USD",
-            List.of("https://io.ment.strg/products/car_majk60_1.png"));
+    final String reqBody =
+        """
+          {
+            "name": "Yoga Carpet Majestic K160",
+            "description": "Product description",
+            "quantityInStock": 16,
+            "category": "CARPETS",
+            "priceAmount": 16.16,
+            "priceCurrency": "USD",
+            "imagesUrls": [
+              "https://io.ment.strg/products/car_majk60_1.png"
+            ]
+          }
+        """;
 
-    var resp =
-        restTemplate.exchange(
-            "/products/{id}",
-            HttpMethod.PUT,
-            new HttpEntity<>(productDtoReq),
-            ProductDto.class,
-            id);
-    ProductDto productDtoResp = resp.getBody();
-
-    assertEquals(HttpStatus.OK, resp.getStatusCode());
-    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
-    assertNotNull(productDtoResp);
-    assertEquals(id, productDtoResp.id());
-    assertNotNull(productDtoResp.sku());
-    assertEquals(productDtoReq.name(), productDtoResp.name());
-    assertEquals(productDtoReq.description(), productDtoResp.description());
-    assertEquals(productDtoReq.quantityInStock(), productDtoResp.quantityInStock());
-    assertEquals(productDtoReq.category(), productDtoResp.category());
-    assertEquals(0, productDtoReq.priceAmount().compareTo(productDtoResp.priceAmount()));
-    assertEquals(productDtoReq.priceCurrency(), productDtoResp.priceCurrency());
-    assertEquals(2, productDtoResp.imagesUrls().size());
+    mockMvc
+        .perform(put("/products/{id}", id).contentType(APPLICATION_JSON).content(reqBody))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(APPLICATION_JSON))
+        .andExpect(jsonPath("id").value(id))
+        .andExpect(jsonPath("sku").exists())
+        .andExpect(jsonPath("name").value("Yoga Carpet Majestic K160"))
+        .andExpect(jsonPath("description").value("Product description"))
+        .andExpect(jsonPath("quantityInStock").value(16))
+        .andExpect(jsonPath("category").value(ProductCategory.CARPETS.name()))
+        .andExpect(jsonPath("priceAmount").value(16.16))
+        .andExpect(jsonPath("priceCurrency").value("USD"))
+        .andExpect(jsonPath("imagesUrls", hasSize(2)));
   }
 
   @Test
-  void update_shouldReturnProductNotFoundResponse() {
-    HttpStatus notFound = HttpStatus.NOT_FOUND;
+  @WithMockUser
+  void update_shouldReturnProductNotFound() throws Exception {
+    final HttpStatus httpStatus = HttpStatus.NOT_FOUND;
     final int id = 15;
-    final ProductDto productDto =
-        new ProductDto(
-            id,
-            null,
-            "Yoga Carpet Majestic K60",
-            "Product description",
-            100,
-            ProductCategory.CARPETS.name(),
-            BigDecimal.valueOf(406.56),
-            "USD",
-            List.of("https://io.ment.strg/products/car_majk60_1.png"));
+    final String reqBody =
+        """
+          {
+            "name": "Yoga Carpet Majestic K160",
+            "description": "Product description",
+            "quantityInStock": 16,
+            "category": "CARPETS",
+            "priceAmount": 16.16,
+            "priceCurrency": "USD",
+            "imagesUrls": [
+              "https://io.ment.strg/products/car_majk60_1.png"
+            ]
+          }
+        """;
 
-    var resp =
-        restTemplate.exchange(
-            "/products/{id}",
-            HttpMethod.PUT,
-            new HttpEntity<>(productDto),
-            ApiErrorResponse.class,
-            id);
-    ApiErrorResponse errorResponse = resp.getBody();
-
-    assertEquals(notFound, resp.getStatusCode());
-    assertEquals(APPLICATION_PROBLEM_JSON, resp.getHeaders().getContentType());
-    assertNotNull(errorResponse);
-    assertEquals(notFound.value(), errorResponse.httpStatusCode());
-    assertEquals(notFound.name(), errorResponse.httpStatus());
-    assertEquals("Product with id=%d not found".formatted(id), errorResponse.errorMessage());
-    assertEquals("/products/%d".formatted(id), errorResponse.path());
+    mockMvc
+        .perform(put("/products/{id}", id).contentType(APPLICATION_JSON).content(reqBody))
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentType(APPLICATION_PROBLEM_JSON))
+        .andExpect(jsonPath("timestamp").exists())
+        .andExpect(jsonPath("httpStatus").value(httpStatus.name()))
+        .andExpect(jsonPath("httpStatusCode").value(httpStatus.value()))
+        .andExpect(jsonPath("errorMessage").value("Product with id=%d not found".formatted(id)))
+        .andExpect(jsonPath("path").value("/products/%d".formatted(id)))
+        .andExpect(jsonPath("errorDetails").doesNotExist());
   }
 
   @Test
-  void patch_shouldReturnProductDtoOfPartiallyUpdatedProduct() {
+  @WithAnonymousUser
+  void update_shouldReturnUnauthorized() throws Exception {
+    final int id = 3;
+    final String reqBody =
+        """
+          {
+            "name": "Yoga Carpet Majestic K160",
+            "description": "Product description",
+            "quantityInStock": 16,
+            "category": "CARPETS",
+            "priceAmount": 16.16,
+            "priceCurrency": "USD",
+            "imagesUrls": [
+              "https://io.ment.strg/products/car_majk60_1.png"
+            ]
+          }
+        """;
+    mockMvc
+        .perform(put("/products/{id}", id).contentType(APPLICATION_JSON).content(reqBody))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @WithAnonymousUser
+  void patch_shouldReturnUnauthorized() throws Exception {
     final int id = 4;
     final String patchNode =
         """
-        {
-          "name": "K444 Carpet Patched",
-          "description": "Changed Description",
-          "quantityInStock": 333
-        }""";
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(APPLICATION_JSON);
+          {
+            "name": "K444 Carpet Patched",
+            "description": "Changed Description",
+            "quantityInStock": 333
+          }
+        """;
+    mockMvc
+        .perform(patch("/products/{id}", id).contentType(APPLICATION_JSON).content(patchNode))
+        .andExpect(status().isUnauthorized());
+  }
 
-    var resp =
-        restTemplate.exchange(
-            "/products/{id}",
-            HttpMethod.PATCH,
-            new HttpEntity<>(patchNode, headers),
-            ProductDto.class,
-            id);
-    ProductDto productDto = resp.getBody();
+  @Test
+  @WithMockUser
+  void patch_shouldUpdateAndReturnProductDto() throws Exception {
+    final int id = 4;
+    final String patchNode =
+        """
+          {
+            "name": "K444 Carpet Patched",
+            "description": "Changed Description",
+            "quantityInStock": 333
+          }
+        """;
 
-    assertEquals(HttpStatus.OK, resp.getStatusCode());
-    assertEquals(APPLICATION_JSON, resp.getHeaders().getContentType());
-    assertNotNull(productDto);
-    assertEquals(id, productDto.id());
-    assertNotNull(productDto.sku());
-    assertEquals("K444 Carpet Patched", productDto.name());
-    assertEquals("Changed Description", productDto.description());
-    assertEquals(333, productDto.quantityInStock());
-    assertEquals(ProductCategory.CARPETS.name(), productDto.category());
-    assertEquals(0, BigDecimal.valueOf(33.33).compareTo(productDto.priceAmount()));
-    assertEquals("USD", productDto.priceCurrency());
-    assertTrue(productDto.imagesUrls().isEmpty());
+    mockMvc
+        .perform(patch("/products/{id}", id).contentType(APPLICATION_JSON).content(patchNode))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(APPLICATION_JSON))
+        .andExpect(jsonPath("id").value(id))
+        .andExpect(jsonPath("sku").exists())
+        .andExpect(jsonPath("name").value("K444 Carpet Patched"))
+        .andExpect(jsonPath("description").value("Changed Description"))
+        .andExpect(jsonPath("quantityInStock").value(333))
+        .andExpect(jsonPath("category").value(ProductCategory.CARPETS.name()))
+        .andExpect(jsonPath("priceAmount").value(33.33))
+        .andExpect(jsonPath("priceCurrency").value("USD"))
+        .andExpect(jsonPath("imagesUrls").isEmpty());
+  }
+
+  @Test
+  @WithMockUser
+  void patch_shouldReturnProductNotFound() throws Exception {
+    final HttpStatus httpStatus = HttpStatus.NOT_FOUND;
+    final int id = 15;
+    final String patchNode =
+        """
+          {
+            "name": "K444 Carpet Patched",
+            "description": "Changed Description",
+            "quantityInStock": 333
+          }
+        """;
+
+    mockMvc
+        .perform(patch("/products/{id}", id).contentType(APPLICATION_JSON).content(patchNode))
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentType(APPLICATION_PROBLEM_JSON))
+        .andExpect(jsonPath("timestamp").exists())
+        .andExpect(jsonPath("httpStatus").value(httpStatus.name()))
+        .andExpect(jsonPath("httpStatusCode").value(httpStatus.value()))
+        .andExpect(jsonPath("errorMessage").value("Product with id=%d not found".formatted(id)))
+        .andExpect(jsonPath("path").value("/products/%d".formatted(id)))
+        .andExpect(jsonPath("errorDetails").doesNotExist());
   }
 }

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -33,6 +34,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableGlobalAuthentication
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+  private static final String CUSTOMER_URL = "/customers/{id}";
 
   private final AuthenticationConfiguration authenticationConfiguration;
   private final JwtAuthenticationProvider jwtAuthenticationProvider;
@@ -98,6 +101,16 @@ public class SecurityConfig {
                         "/swagger-resources/**",
                         "/webjars/**")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/products/**", "/customers/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/products/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.PUT, CUSTOMER_URL)
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PATCH, CUSTOMER_URL)
+                    .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, CUSTOMER_URL)
+                    .authenticated()
                     .anyRequest()
                     .authenticated())
         .build();

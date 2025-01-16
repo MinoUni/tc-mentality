@@ -87,7 +87,19 @@ public class SecurityConfig {
                         (req, resp, e) -> resp.sendError(SC_UNAUTHORIZED, "Authorization required"))
                     .accessDeniedHandler(
                         (req, resp, e) -> resp.sendError(SC_FORBIDDEN, "Insufficient authorities")))
-        .authorizeHttpRequests(req -> req.anyRequest().authenticated())
+        .authorizeHttpRequests(
+            req ->
+                req.requestMatchers(
+                        "/v2/api-docs/**",
+                        "/v3/api-docs/**",
+                        "/swagger.json",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/webjars/**")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .build();
   }
 

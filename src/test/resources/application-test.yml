@@ -1,5 +1,6 @@
 logging:
   level:
+    org.springframework.security: debug
     net.ttddyy.dsproxy.listener: debug
     root: info
     web: info

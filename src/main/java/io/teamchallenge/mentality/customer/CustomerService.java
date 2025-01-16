@@ -7,6 +7,7 @@ import io.teamchallenge.mentality.exception.CustomerNotFoundException;
 import io.teamchallenge.mentality.exception.JsonException;
 import io.teamchallenge.mentality.utils.CustomerConstant;
 import java.io.IOException;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -58,6 +59,22 @@ public class CustomerService {
     customerMapper.updateWithNull(customerDto, customer);
     customer = customerRepository.save(customer);
     return customerMapper.toCustomerDto(customer);
+  }
+
+  public boolean existsByEmail(String email) {
+    return customerRepository.existsByEmail(email);
+  }
+
+  @Transactional
+  public void create(Map<String, Object> payload) {
+    String[] fullName = ((String) payload.get("name")).split("\\s+");
+    Customer customer =
+        Customer.builder()
+            .email((String) payload.get("email"))
+            .firstName(fullName[0])
+            .lastName(fullName[1])
+            .build();
+    customerRepository.save(customer);
   }
 
   private Customer getCustomer(final Integer id) {

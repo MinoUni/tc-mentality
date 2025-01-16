@@ -1,4 +1,6 @@
 application:
+  cors:
+    allowed-origins: http://localhost:3000, https://mentality-web.vercel.app
   google:
     client-id: ${GOOGLE_CLIENT_ID}
 server:

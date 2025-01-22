@@ -10,6 +10,7 @@ import io.teamchallenge.mentality.exception.GoogleTokenException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -40,14 +43,10 @@ public class JwtHelper {
     this.userService = customerService;
   }
 
-  public String verifyToken(String token) {
+  public User verifyToken(String token) {
     if (token.startsWith("gho_")) {
       Map<String, Object> payload = exchangeGithubToken(token);
-      String email = (String) payload.get("email");
-      if (!userService.existsByEmail(email)) {
-        userService.create(payload);
-      }
-      return email;
+      return getUserOrCreateNew(payload);
     }
     try {
       GoogleIdToken idToken =
@@ -58,11 +57,7 @@ public class JwtHelper {
                     return new GoogleTokenException("GoogleIdToken verification failed");
                   });
       GoogleIdToken.Payload payload = idToken.getPayload();
-      String email = payload.getEmail();
-      if (!userService.existsByEmail(email)) {
-        userService.create(payload);
-      }
-      return email;
+      return getUserOrCreateNew(payload);
     } catch (GeneralSecurityException e) {
       log.error("GoogleIdToken verification security failed:", e);
       throw new GoogleTokenException(e.getMessage());
@@ -70,6 +65,14 @@ public class JwtHelper {
       log.info("GoogleIdToken verification failed:", e);
       throw new GoogleTokenException(e.getMessage());
     }
+  }
+
+  private User getUserOrCreateNew(Map<String, Object> payload) {
+    final String email = (String) payload.get("email");
+    if (!userService.existsByEmail(email)) {
+      userService.create(payload);
+    }
+    return new User(email, "", List.of(new SimpleGrantedAuthority("USER")));
   }
 
   private Map<String, Object> exchangeGithubToken(String tokenString) {

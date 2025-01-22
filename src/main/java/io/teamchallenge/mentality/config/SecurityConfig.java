@@ -4,7 +4,6 @@ import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
-import io.teamchallenge.mentality.customer.CustomerService;
 import io.teamchallenge.mentality.security.filter.JwtAccessTokenAuthenticationFilter;
 import io.teamchallenge.mentality.security.provider.JwtAuthenticationProvider;
 import java.util.List;
@@ -75,13 +74,12 @@ public class SecurityConfig {
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomerService customerService)
-      throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
         .csrf(AbstractHttpConfigurer::disable)
         .addFilterBefore(
-            new JwtAccessTokenAuthenticationFilter(authenticationManager(), customerService),
+            new JwtAccessTokenAuthenticationFilter(authenticationManager()),
             UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling(
             exception ->

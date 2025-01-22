@@ -1,6 +1,5 @@
 package io.teamchallenge.mentality.security.filter;
 
-import io.teamchallenge.mentality.customer.CustomerService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,12 +19,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAccessTokenAuthenticationFilter extends OncePerRequestFilter {
 
   private final AuthenticationManager authenticationManager;
-  private final CustomerService userService;
 
-  public JwtAccessTokenAuthenticationFilter(
-      AuthenticationManager authenticationManager, CustomerService userService) {
+  public JwtAccessTokenAuthenticationFilter(AuthenticationManager authenticationManager) {
     this.authenticationManager = authenticationManager;
-    this.userService = userService;
   }
 
   @Override
@@ -44,10 +40,8 @@ public class JwtAccessTokenAuthenticationFilter extends OncePerRequestFilter {
         Authentication authentication =
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(token, null));
-        if (userService.existsByEmail((String) authentication.getPrincipal())) {
-          log.debug("User authentication was successful: {}", authentication.getPrincipal());
-          SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
+        log.debug("User authentication was successful: {}", authentication.getPrincipal());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
       } catch (Exception e) {
         log.info("Access was denied for req with token: {}", e.getMessage());
       }
